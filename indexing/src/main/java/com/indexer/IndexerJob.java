@@ -3,6 +3,7 @@ package com.indexer;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -18,7 +19,6 @@ import java.util.StringTokenizer;
 public class IndexerJob {
 
 
-    static Table table;
 
     public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
         private final static IntWritable one = new IntWritable(1);
@@ -37,12 +37,31 @@ public class IndexerJob {
     public static class Reduce extends MapReduceBase implements  Reducer<Text, IntWritable, Text, IntWritable> {
 
         public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+
+
+            AmazonDynamoDBClient client = new AmazonDynamoDBClient();
+            DynamoDB dynamoDB = new DynamoDB(client);
+
+            Table table = dynamoDB.getTable("testcount");
+
             int sum = 0;
             while (values.hasNext()) {
                 sum += values.next().get();
             }
 
-            table.putItem(new Item().withPrimaryKey("word", key.toString()).withInt("count", sum));
+            if (key != null && !key.toString().isEmpty()){
+                try {
+                    System.out.println("Adding a new item...");
+                    PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()).withInt("count", sum));
+
+                    System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
+
+                } catch (Exception e) {
+                    System.err.println("Unable to add item: " + key.toString() + " " + sum);
+                    System.err.println(e.getMessage());
+                }
+
+            }
             output.collect(key, new IntWritable(sum));
 
         }
@@ -65,10 +84,6 @@ public class IndexerJob {
         FileInputFormat.setInputPaths(conf, new Path(args[0]));
         FileOutputFormat.setOutputPath(conf, new Path(args[1]));
 
-        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        DynamoDB dynamoDB = new DynamoDB(client);
-
-        table = dynamoDB.getTable("testcount");
 
 
         JobClient.runJob(conf);
