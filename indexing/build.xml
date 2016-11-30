@@ -1,0 +1,65 @@
+    <project name="HW3" default="lol" basedir="./">
+
+    <property name="shared.root" location="${basedir}"/>
+    <property name="project.root" location="${basedir}"/>
+    <property name="build.dir" location="${project.root}"/>
+    <property name="build.target.dir" location="${project.root}${file.separator}target"/>
+    <property name="inputlib.dir"  location="${shared.root}${file.separator}lib"/>
+    <property name="src.test.dir"  location="${build.dir}${file.separator}test"/>
+    <property name="resources.dir" location="${build.dir}${file.separator}resources"/>
+    <property name="conf.dir"      location="${build.dir}${file.separator}conf"/>
+    <property name="main-class"      value="edu.upenn.cis.cis455.webserver.HttpServer"/>
+    <property name="classes.dir"     location="${basedir}${file.separator}classes"/>
+    <path id="classpath">
+        <fileset dir="${inputlib.dir}" includes="**/*.jar"/>
+    </path>
+
+
+
+
+
+
+    <path id="build-classpath">
+        <fileset dir="${build.dir}/lib/">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="src/main/java/com/indexer" destdir="${classes.dir}" debug="on" deprecation="off" optimize="on" includeAntRuntime="no">
+            <classpath>
+                <fileset dir="${inputlib.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+
+    <manifestclasspath property="classpathforjarlib" jarfile="test.jar">
+        <classpath>
+            <pathelement path="${classes.dir}" />
+            <fileset dir="${inputlib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </classpath>
+    </manifestclasspath>
+    <target name="lol" depends="compile">
+        <delete file="test.jar"/>
+        <jar destfile="test.jar" update="true">
+            <fileset dir="${classes.dir}">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="${inputlib.dir}" includes="**/*.jar" />
+            <manifest>
+                <attribute name="Main-Class" value="com.indexer.IndexerJob"/>
+                <attribute name="Class-Path" value="${classpathforjarlib}" />
+            </manifest>
+            <zipgroupfileset dir="${inputlib.dir}" includes="jsoup-1.10.1.jar" />
+        </jar>
+    </target>
+
+
+
+    </project>
