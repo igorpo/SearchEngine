@@ -10,14 +10,14 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/aws-java-sdk-1.11.61/lib/aws-java-sdk-1.11.61.jar!/" />
+          <root url="file://$MODULE_DIR$/aws-java-sdk-1.11.61/lib" />
         </CLASSES>
-        <JAVADOC>
-          <root url="jar://$MODULE_DIR$/aws-java-sdk-1.11.61/lib/aws-java-sdk-1.11.61-javadoc.jar!/" />
-        </JAVADOC>
+        <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/aws-java-sdk-1.11.61/lib/aws-java-sdk-1.11.61-sources.jar!/" />
+          <root url="file://$MODULE_DIR$/aws-java-sdk-1.11.61/lib" />
         </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/aws-java-sdk-1.11.61/lib" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/aws-java-sdk-1.11.61/lib" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
     <orderEntry type="module-library">
