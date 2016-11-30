@@ -18,6 +18,7 @@ public class S3Wrapper {
     private static AmazonS3 s3 = null;
     private static Region reg = null;
     private static String bucketName = "";
+    private static AccessControlList acl = null;
 
     public static void init(String buckName) {
         try {
@@ -35,6 +36,9 @@ public class S3Wrapper {
 //        bucketName = "my-first-s3-bucket-" + UUID.randomUUID();
 
         bucketName = buckName;
+
+        acl = new AccessControlList();
+        acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);
 
         System.out.println("===========================================");
         System.out.println("Getting Started with Amazon S3");
@@ -60,10 +64,16 @@ public class S3Wrapper {
     public static void addDocument(String key, String content) {
         System.out.println("Uploading a new object to S3 from a file\n");
         try {
-            s3.putObject(new PutObjectRequest(bucketName, key, createFile(content)));
+
+            s3.putObject(new PutObjectRequest(bucketName, key, createFile(content))
+                    .withAccessControlList(acl));
+
         } catch (IOException e) {
+
             e.printStackTrace();
+
         } catch (AmazonServiceException ase) {
+
             System.out.println("Caught an AmazonServiceException, which means your request made it "
                     + "to Amazon S3, but was rejected with an error response for some reason.");
             System.out.println("Error Message:    " + ase.getMessage());
@@ -71,16 +81,19 @@ public class S3Wrapper {
             System.out.println("AWS Error Code:   " + ase.getErrorCode());
             System.out.println("Error Type:       " + ase.getErrorType());
             System.out.println("Request ID:       " + ase.getRequestId());
+
         } catch (AmazonClientException ace) {
+
             System.out.println("Caught an AmazonClientException, which means the client encountered "
                     + "a serious internal problem while trying to communicate with S3, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message: " + ace.getMessage());
+
         }
 
     }
 
-    public static BufferedReader getDocument(String key) {
+    public static InputStream getDocument(String key) {
          /*
          * Download an object - When you download an object, you get all of
          * the object's metadata and a stream from which to read the contents.
@@ -100,12 +113,10 @@ public class S3Wrapper {
 
         System.out.println("Content-Type: "  + document.getObjectMetadata().getContentType());
 
-        BufferedReader reader = null;
+        InputStream stream = null;
         try {
 
-            InputStream stream = document.getObjectContent();
-
-            reader = new BufferedReader(new InputStreamReader(stream));
+            stream = document.getObjectContent();
 
         } catch (AmazonServiceException ase) {
 
@@ -123,7 +134,7 @@ public class S3Wrapper {
             System.out.println("Error Message: " + ace.getMessage());
         }
 
-        return reader;
+        return stream;
 
 
     }
@@ -186,7 +197,7 @@ public class S3Wrapper {
      *
      * @throws IOException
      */
-    private static void displayTextInputStream(InputStream input) throws IOException {
+    public static void displayTextInputStream(InputStream input) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         while (true) {
             String line = reader.readLine();
