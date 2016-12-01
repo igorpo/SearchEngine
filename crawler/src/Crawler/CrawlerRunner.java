@@ -1,7 +1,11 @@
 package Crawler;
 
+import Frontier.Frontier;
+import Testing.LocalFrontier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -10,7 +14,7 @@ public class CrawlerRunner {
 
     private static final Log log = LogFactory.getLog(CrawlerRunner.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         int maxDocuments = -1;
         int maxThreads = 8;
 
@@ -45,5 +49,9 @@ public class CrawlerRunner {
 
         log.info("Initializing the crawler with seed(s) " + seed + " with maximum number of " + maxThreads + " threads " +
                 "and searching for " + ((maxDocuments != -1) ? maxDocuments : "unlimited") + " documents.");
+
+        Frontier frontier = new LocalFrontier();
+        Crawler crawler = new Crawler(maxThreads, frontier);
+        frontier.enqueue(seed);
     }
 }
