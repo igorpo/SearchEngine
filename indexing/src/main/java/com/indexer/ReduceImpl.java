@@ -5,49 +5,80 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.MapReduceBase;
-import org.apache.hadoop.mapred.OutputCollector;
-import org.apache.hadoop.mapred.Reducer;
-import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created by azw on 11/30/16.
  */
-public class ReduceImpl extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
+public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+
+
+    Table table;
+    int N;
+    @Override
+    public void configure(JobConf job){
+
+        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
+        DynamoDB dynamoDB = new DynamoDB(client);
+
+        table = dynamoDB.getTable("testcount");
+        N = Integer.parseInt(job.get("num"));
+
+    }
 
     @Override
-    public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
-
+    public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         DynamoDB dynamoDB = new DynamoDB(client);
 
         Table table = dynamoDB.getTable("testcount");
 
-        int sum = 0;
+        ArrayList<Text> urls = new ArrayList<>();
         while (values.hasNext()) {
-            sum += values.next().get();
+            urls.add(values.next());
         }
+
+        int len = urls.size();
+        double idf = Math.log((double)N/(double)len);
+
+        List<List<String>> full = new ArrayList<>();
+
+
+        for (Text o : urls) {
+            List<String> thing = new ArrayList<>();
+
+            String[] stuff = o.toString().split(",", 2);
+            String url = stuff[1];
+            double tf = Double.parseDouble(stuff[0]);
+            thing.add(url);
+            thing.add(new Double(tf*idf).toString());
+            full.add(thing);
+
+        }
+
 
         if (key != null && !key.toString().isEmpty()){
             try {
                 System.out.println("Adding a new item...");
-                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()).withInt("count", sum));
+                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString())
+                        .withList("data", full));
 
                 System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
 
             } catch (Exception e) {
-                System.err.println("Unable to add item: " + key.toString() + " " + sum);
+                System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
                 System.err.println(e.getMessage());
             }
 
         }
-        output.collect(key, new IntWritable(sum));
+        output.collect(key, new Text(full.toString()));
 
     }
 }

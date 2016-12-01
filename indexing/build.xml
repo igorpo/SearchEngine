@@ -36,6 +36,17 @@
         </javac>
     </target>
 
+    <target name="compiles3">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="src/main/java/com/amazonaws/samples" destdir="${classes.dir}" debug="on" deprecation="off" optimize="on" includeAntRuntime="no">
+            <classpath>
+                <fileset dir="${inputlib.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
 
     <manifestclasspath property="classpathforjarlib" jarfile="test.jar">
         <classpath>
@@ -58,6 +69,23 @@
             </manifest>
             <zipgroupfileset dir="${inputlib.dir}" includes="jsoup-1.10.1.jar" />
         </jar>
+    </target>
+
+
+    <target name="sample" depends="compiles3">
+        <java classname="com.amazonaws.samples.S3Sample" fork="true">
+            <classpath>
+                <path refid="classpath"/>
+                <fileset dir="${classes.dir}">
+                    <include name="**/*.class"/>
+                </fileset>
+                <path location="${build.dir}/lib"/>
+                <path location="${build.dir}/classes"/>
+                <fileset dir="${inputlib.dir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </java>
     </target>
 
 
