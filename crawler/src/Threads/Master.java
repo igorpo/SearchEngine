@@ -1,5 +1,7 @@
 package Threads;
 
+import Crawler.Messenger;
+
 import java.util.Calendar;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -10,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Master {
 
     /**
-     * MAX number of parallel threads per Crawler
+     * MAX number of parallel threads per Crawler.Crawler
      */
     private int maxThreads;
 
@@ -36,16 +38,22 @@ public class Master {
     private ConcurrentLinkedQueue<String> frontier;
 
     /**
+     * Messenger interface for contacting crawler
+     */
+    private Messenger msgr;
+
+    /**
      * The Master class controls the extended specified thread class
      * that will be provided.
      * @param threadClass Extended thread class that master rules over
      * @param maxThreads Max number of threads to be run for this job
      * @param frontier Frontier queue of URLs
      */
-    public Master(Class threadClass, int maxThreads, ConcurrentLinkedQueue<String> frontier) {
+    public Master(Class threadClass, int maxThreads, ConcurrentLinkedQueue<String> frontier, Messenger msgr) {
         this.threadClass = threadClass;
         this.maxThreads = maxThreads;
         this.frontier = frontier;
+        this.msgr = msgr;
         idCounter = currentNumThreads = 0;
     }
 

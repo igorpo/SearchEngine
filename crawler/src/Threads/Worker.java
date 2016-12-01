@@ -1,5 +1,7 @@
 package Threads;
 
+import Crawler.Messenger;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -9,6 +11,7 @@ public class Worker extends Thread {
     private int id;
     private ConcurrentLinkedQueue<String> frontier;
     private Master master;
+    private Messenger msgr;
 
     /**
      * Set the id of the thread
@@ -35,6 +38,14 @@ public class Worker extends Thread {
     }
 
     /**
+     * Messenger for talking to crawler set here
+     * @param m msgr to set
+     */
+    public void setMessenger(Messenger m) {
+        this.msgr = m;
+    }
+
+    /**
      * Getter for id
      * @return id of thread
      */
@@ -48,10 +59,11 @@ public class Worker extends Thread {
      * @param frontier frontier queue of links
      * @param master master of the threads
      */
-    public void initWorkerEssentials(int id, ConcurrentLinkedQueue<String> frontier, Master master) {
+    public void initWorkerEssentials(int id, ConcurrentLinkedQueue<String> frontier, Master master, Messenger msgr) {
         setID(id);
         setFrontier(frontier);
         setMaster(master);
+        setMessenger(msgr);
     }
 
     /**
