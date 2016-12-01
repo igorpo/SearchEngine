@@ -1,11 +1,11 @@
 package Testing;
 
-import Frontier.FrontierWrapper;
+import Frontier.Frontier;
 
 /**
  * Created by YagilB on 01/12/2016.
  */
-public class LocalFrontier implements FrontierWrapper {
+public class LocalFrontier implements Frontier.Frontier {
 
     // TODO: @igor
 
