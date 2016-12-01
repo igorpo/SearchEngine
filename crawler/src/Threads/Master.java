@@ -2,11 +2,15 @@ package Threads;
 
 import Crawler.Messenger;
 import Frontier.Frontier;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
  */
 public class Master {
+
+    private static final Log log = LogFactory.getLog(Master.class);
 
     /**
      * MAX number of parallel threads per Crawler.Crawler
@@ -54,6 +58,11 @@ public class Master {
         idCounter = currentNumThreads = 0;
     }
 
+    /**
+     * Our own personal thread spawner. Instead of keeping a
+     * dedicated threadpool open, we just spawn and kill threads off as
+     * necessary.
+     */
     public synchronized void start() {
 
     }
@@ -68,8 +77,8 @@ public class Master {
      * kill themselves off when they finish so no worries!
      * @return id number
      */
-    public synchronized int generateID() {
-        return idCounter++;
+    public synchronized String generateID() {
+        return String.valueOf(idCounter++);
     }
 
     /**
