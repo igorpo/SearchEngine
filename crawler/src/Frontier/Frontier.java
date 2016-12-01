@@ -1,24 +1,28 @@
 package Frontier;
 
+import java.io.IOException;
+
 /**
  * Created by YagilB on 01/12/2016.
  */
 public interface Frontier {
 
+    public void init(String threadID);
+
     /*
-     * Provide worker thread ID to pop next URL from queue
+     * Pop next URL from queue
      * Returns URL
      */
-    public String pop(String threadID);
+    public String poll() throws IOException;
 
     /*
-     * Provide worker thread ID and URL to push to queue
+     * Provide URL to push to queue
      */
-    public void push(String URL, String threadID);
+    public void enqueue(String URL) throws IOException;
 
     /*
-     * Provide worker thread ID to get size of queue
+     * Returns number of remaining URLs in worker's frontier queue
      */
-    public int size(String threadID);
+    public int size();
 
 }
