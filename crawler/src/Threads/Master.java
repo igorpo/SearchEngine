@@ -1,8 +1,7 @@
 package Threads;
 
-import java.util.Calendar;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import Crawler.Messenger;
+import Frontier.Frontier;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -10,7 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Master {
 
     /**
-     * MAX number of parallel threads per Crawler
+     * MAX number of parallel threads per Crawler.Crawler
      */
     private int maxThreads;
 
@@ -33,7 +32,12 @@ public class Master {
     /**
      * A concurrent frontier queue that must be shared across the threads
      */
-    private ConcurrentLinkedQueue<String> frontier;
+    private Frontier frontier;
+
+    /**
+     * Messenger interface for contacting crawler
+     */
+    private Messenger msgr;
 
     /**
      * The Master class controls the extended specified thread class
@@ -42,10 +46,11 @@ public class Master {
      * @param maxThreads Max number of threads to be run for this job
      * @param frontier Frontier queue of URLs
      */
-    public Master(Class threadClass, int maxThreads, ConcurrentLinkedQueue<String> frontier) {
+    public Master(Class threadClass, int maxThreads, Frontier frontier, Messenger msgr) {
         this.threadClass = threadClass;
         this.maxThreads = maxThreads;
         this.frontier = frontier;
+        this.msgr = msgr;
         idCounter = currentNumThreads = 0;
     }
 

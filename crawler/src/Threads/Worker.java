@@ -1,14 +1,16 @@
 package Threads;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import Crawler.Messenger;
+import Frontier.Frontier;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
  */
 public class Worker extends Thread {
     private int id;
-    private ConcurrentLinkedQueue<String> frontier;
+    private Frontier frontier;
     private Master master;
+    private Messenger msgr;
 
     /**
      * Set the id of the thread
@@ -22,7 +24,7 @@ public class Worker extends Thread {
      * Set the url frontier
      * @param frontier queue
      */
-    public void setFrontier(ConcurrentLinkedQueue<String> frontier) {
+    public void setFrontier(Frontier frontier) {
         this.frontier = frontier;
     }
 
@@ -32,6 +34,14 @@ public class Worker extends Thread {
      */
     public void setMaster(Master master) {
         this.master = master;
+    }
+
+    /**
+     * Messenger for talking to crawler set here
+     * @param m msgr to set
+     */
+    public void setMessenger(Messenger m) {
+        this.msgr = m;
     }
 
     /**
@@ -48,10 +58,11 @@ public class Worker extends Thread {
      * @param frontier frontier queue of links
      * @param master master of the threads
      */
-    public void initWorkerEssentials(int id, ConcurrentLinkedQueue<String> frontier, Master master) {
+    public void initWorkerEssentials(int id, Frontier frontier, Master master, Messenger msgr) {
         setID(id);
         setFrontier(frontier);
         setMaster(master);
+        setMessenger(msgr);
     }
 
     /**
