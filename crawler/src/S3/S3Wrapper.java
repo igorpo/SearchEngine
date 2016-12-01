@@ -1,3 +1,4 @@
+package S3;
 /**
  * Created by YagilB on 29/11/2016.
  */
@@ -30,20 +31,10 @@ public class S3Wrapper {
                             "location (~/.aws/credentials), and is in valid format.",
                     e);
         }
-
         s3 = new AmazonS3Client(credentials);
-
-//        bucketName = "my-first-s3-bucket-" + UUID.randomUUID();
-
         bucketName = buckName;
-
         acl = new AccessControlList();
         acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);
-
-        System.out.println("===========================================");
-        System.out.println("Getting Started with Amazon S3");
-        System.out.println("===========================================\n");
-
     }
 
     public static void listBuckets() {
