@@ -5,22 +5,22 @@ import Frontier.Frontier;
 /**
  * Created by YagilB on 01/12/2016.
  */
-public class LocalFrontier implements Frontier.Frontier {
+public class LocalFrontier implements Frontier {
 
     // TODO: @igor
 
     @Override
-    public String pop(String threadID) {
+    public synchronized String pop(String threadID) {
         return null;
     }
 
     @Override
-    public void push(String URL, String threadID) {
+    public synchronized void push(String URL, String threadID) {
 
     }
 
     @Override
-    public int size(String threadID) {
+    public synchronized int size(String threadID) {
         return 0;
     }
 }
