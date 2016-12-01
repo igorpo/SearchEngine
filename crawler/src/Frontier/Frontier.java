@@ -3,7 +3,7 @@ package Frontier;
 import java.io.IOException;
 
 /**
- * Created by YagilB on 01/12/2016.
+ * Created by YagilB on 12/1/2016.
  */
 public interface Frontier {
 
