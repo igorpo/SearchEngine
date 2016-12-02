@@ -59,6 +59,11 @@ public class Master {
         this.msgr = msgr;
         this.maxDocuments = maxDocuments;
         this.currentNumThreads = this.currentNumDocumentsProcessed = 0;
+        try {
+            initThreads();
+        } catch (Exception e) {
+            log.error("Could not launch initial thread pool: " + e.getMessage());
+        }
     }
 
     /**
@@ -86,6 +91,7 @@ public class Master {
         this.msgr.terminate(threadID);
 
         // if we hit our mark, we just want to end
+        // TODO refactor, this might not be needed or go here, need to figure out later
         if (achievedLimit()) {
             for (int i = 0; i < getCurrentNumThreads(); i++) {
                 this.msgr.terminate(String.valueOf(i));
@@ -93,8 +99,12 @@ public class Master {
             return;
         }
 
-        // try to init more threads to make up for potentially dead ones
-        initThreads();
+        try {
+            // try to init more threads to make up for potentially dead ones
+            initThreads();
+        } catch (Exception e) {
+            log.error("Could not init more threads, moving on: " + e.getMessage());
+        }
     }
 
     /**

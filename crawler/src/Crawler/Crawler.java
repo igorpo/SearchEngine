@@ -12,14 +12,32 @@ public class Crawler implements Messenger {
 
     private static final Log log = LogFactory.getLog(Crawler.class);
 
+    /**
+     * The crawler, which is a Messenger meaning it is able to
+     * retrieve messages sent via Master from the Workers, will take
+     * a frontier queue and a max thread and doc parameter and create the master
+     * which will oversee the work done.
+     * @param maxThreads maximum number of threads
+     * @param maxDocuments maximum number of documents
+     * @param frontier frontier queue
+     */
     public Crawler(int maxThreads, int maxDocuments, Frontier frontier) {
         Master master = new Master(maxThreads, maxDocuments, frontier, this);
     }
 
+    /**
+     * On termination of thread events launched here
+     * @param threadID thread ID that is terminated
+     */
     public void terminate(String threadID) {
         log.info("[" + threadID + "] terminated");
     }
 
+    /**
+     * Message sent through Messenger interface launched here
+     * @param threadID thread that sent message
+     * @param msg message to be sent
+     */
     public void message(String threadID, String msg) {
         log.info("[" + threadID + "] " + msg);
     }
