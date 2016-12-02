@@ -18,6 +18,13 @@ public class Master {
     private int maxThreads;
 
     /**
+     * Max documents to be crawled by our crawler. If this is
+     * set to -1, we keep going forever until something breaks or
+     * we run out of URLs (ha).
+     */
+    private int maxDocuments;
+
+    /**
      * Current number of threads running which will
      * be kept track of through ThreadIDs
      */
@@ -37,12 +44,15 @@ public class Master {
      * The Master class controls the extended specified thread class
      * that will be provided.
      * @param maxThreads Max number of threads to be run for this job
+     * @param maxDocuments Max number of documents to be crawled
+     *                     If -1, then we keep going forever
      * @param frontier Frontier queue of URLs
      */
-    public Master(int maxThreads, Frontier frontier, Messenger msgr) {
+    public Master(int maxThreads, int maxDocuments, Frontier frontier, Messenger msgr) {
         this.maxThreads = maxThreads;
         this.frontier = frontier;
         this.msgr = msgr;
+        this.maxDocuments = maxDocuments;
         this.currentNumThreads = 0;
     }
 
@@ -79,6 +89,14 @@ public class Master {
      */
     public synchronized void decreaseThreadCount() {
         this.currentNumThreads--;
+    }
+
+    /**
+     * Getter for maximum number of documents
+     * @return the maximum number of docs to crawl
+     */
+    public int getMaxDocuments() {
+        return this.maxDocuments;
     }
 
     /**

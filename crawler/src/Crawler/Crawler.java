@@ -12,8 +12,8 @@ public class Crawler implements Messenger {
 
     private static final Log log = LogFactory.getLog(Crawler.class);
 
-    public Crawler(int maxThreads, Frontier frontier) {
-        Master master = new Master(maxThreads, frontier, this);
+    public Crawler(int maxThreads, int maxDocuments, Frontier frontier) {
+        Master master = new Master(maxThreads, maxDocuments, frontier, this);
     }
 
     public void terminate(int threadID) {

@@ -51,7 +51,7 @@ public class CrawlerRunner {
                 "and searching for " + ((maxDocuments != -1) ? maxDocuments : "unlimited") + " documents.");
 
         Frontier frontier = new LocalFrontier();
-        Crawler crawler = new Crawler(maxThreads, frontier);
+        Crawler crawler = new Crawler(maxThreads, maxDocuments, frontier);
         frontier.enqueue(seed);
     }
 }
