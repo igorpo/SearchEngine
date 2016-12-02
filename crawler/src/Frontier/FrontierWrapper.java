@@ -13,7 +13,7 @@ import java.net.URL;
 public class FrontierWrapper implements Frontier {
 
     // AWS
-    private static String remoteAddr = ""; // the EC2 instance address
+    private static String remoteAddr = "0.0.0.0:4567"; // the EC2 instance address
     private static String secret = "vix0jw1H6Vi/wBRAB9QDGHxFPOJtUm9e2r9GuANmjrY=";
 
     private static String threadID = "";
@@ -25,7 +25,7 @@ public class FrontierWrapper implements Frontier {
 
     @Override
     public String poll() throws RuntimeException, IOException {
-        HttpURLConnection conn = sendReq("pop",null, "GET");
+        HttpURLConnection conn = sendReq("poll",null, "GET");
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new RuntimeException("Job definition request failed");
         }
@@ -54,7 +54,7 @@ public class FrontierWrapper implements Frontier {
     @Override
     public void enqueue(String URL) throws RuntimeException, IOException {
 
-        HttpURLConnection conn = sendReq("push", "url="+URL, "POST");
+        HttpURLConnection conn = sendReq("enqueue", "url="+URL, "POST");
 
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new RuntimeException("Job definition request failed");
