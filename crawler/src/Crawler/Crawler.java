@@ -16,11 +16,11 @@ public class Crawler implements Messenger {
         Master master = new Master(maxThreads, maxDocuments, frontier, this);
     }
 
-    public void terminate(int threadID) {
+    public void terminate(String threadID) {
         log.info("[" + threadID + "] terminated");
     }
 
-    public void message(int threadID, String msg) {
+    public void message(String threadID, String msg) {
         log.info("[" + threadID + "] " + msg);
     }
 

@@ -41,6 +41,11 @@ public class Master {
     private Messenger msgr;
 
     /**
+     * Current number of processed docs
+     */
+    private int currentNumDocumentsProcessed;
+
+    /**
      * The Master class controls the extended specified thread class
      * that will be provided.
      * @param maxThreads Max number of threads to be run for this job
@@ -53,7 +58,7 @@ public class Master {
         this.frontier = frontier;
         this.msgr = msgr;
         this.maxDocuments = maxDocuments;
-        this.currentNumThreads = 0;
+        this.currentNumThreads = this.currentNumDocumentsProcessed = 0;
     }
 
     /**
@@ -70,7 +75,15 @@ public class Master {
         }
     }
 
-    public synchronized void end(String threadID) {
+    /**
+     * Final master handler of terminating thread
+     * @param threadID id of thread that is terminating
+     */
+    public synchronized void terminateThread(String threadID) {
+        decreaseThreadCount();
+
+        // send the messenger (crawler) the termination request in case we want to do something else
+        this.msgr.terminate(threadID);
 
     }
 
@@ -89,6 +102,21 @@ public class Master {
      */
     public synchronized void decreaseThreadCount() {
         this.currentNumThreads--;
+    }
+
+    /**
+     * Increase the count of the processed docs
+     */
+    public synchronized void increaseProcessedDocCount() {
+        this.currentNumDocumentsProcessed++;
+    }
+
+    /**
+     * Get the current number of documents processed
+     * @return number of documents that have been processed and downloaded
+     */
+    public synchronized int getCurrentNumDocumentsProcessed() {
+        return this.currentNumDocumentsProcessed;
     }
 
     /**
