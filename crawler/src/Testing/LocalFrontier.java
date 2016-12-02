@@ -27,4 +27,9 @@ public class LocalFrontier implements Frontier {
         return 0;
 
     }
+
+    @Override
+    public synchronized boolean isEmpty() {
+        return size() == 0;
+    }
 }

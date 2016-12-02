@@ -47,6 +47,11 @@ public class FrontierWrapper implements Frontier {
     }
 
     @Override
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    @Override
     public void enqueue(String URL) throws RuntimeException, IOException {
 
         HttpURLConnection conn = sendReq("push", "url="+URL, "POST");

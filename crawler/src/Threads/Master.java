@@ -24,16 +24,6 @@ public class Master {
     private int currentNumThreads;
 
     /**
-     * Counter that will be synchronized for ID generation
-     */
-    private int idCounter;
-
-    /**
-     * The extended thread class that Master has control over
-     */
-    private Class threadClass;
-
-    /**
      * A concurrent frontier queue that must be shared across the threads
      */
     private Frontier frontier;
@@ -46,39 +36,49 @@ public class Master {
     /**
      * The Master class controls the extended specified thread class
      * that will be provided.
-     * @param threadClass Extended thread class that master rules over
      * @param maxThreads Max number of threads to be run for this job
      * @param frontier Frontier queue of URLs
      */
-    public Master(Class threadClass, int maxThreads, Frontier frontier, Messenger msgr) {
-        this.threadClass = threadClass;
+    public Master(int maxThreads, Frontier frontier, Messenger msgr) {
         this.maxThreads = maxThreads;
         this.frontier = frontier;
         this.msgr = msgr;
-        idCounter = currentNumThreads = 0;
+        this.currentNumThreads = 0;
     }
 
     /**
      * Our own personal thread spawner. Instead of keeping a
      * dedicated threadpool open, we just spawn and kill threads off as
-     * necessary.
+     * they finish working.
      */
-    public synchronized void start() {
-
+    public synchronized void initThreads() {
+        int threadsToStart = maxThreads - currentNumThreads;
+        for (int i = 0; i < threadsToStart; i++) {
+            Worker workerThread = new Worker();
+            workerThread.initWorkerEssentials(increaseThreadCount(), this.frontier, this);
+            workerThread.start();
+        }
     }
 
-    public synchronized void end(int threadID) {
+    public synchronized void end(String threadID) {
 
     }
 
     /**
-     * Ensures a unique thread number for a newly spawned thread. Since we are
-     * not using a thread pool this can get a bit high, but the threads will
-     * kill themselves off when they finish so no worries!
-     * @return id number
+     * Increase the current thread count. This also serves as an ID
+     * generator, since it will ensure that the threads that have just died
+     * IDs are reassigned to the newly spawned threads to fill them up.
+     * @return new current number of threads/ID
      */
-    public synchronized String generateID() {
-        return String.valueOf(idCounter++);
+    public synchronized String increaseThreadCount() {
+        return String.valueOf(this.currentNumThreads++);
+    }
+
+    /**
+     * Decrease the current thread count once a thread has died off
+     */
+    public synchronized void decreaseThreadCount() {
+        this.currentNumThreads--;
     }
 
     /**

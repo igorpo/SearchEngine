@@ -58,7 +58,7 @@ public class Worker extends Thread {
      * @param frontier frontier queue of links
      * @param master master of the threads
      */
-    public void initWorkerEssentials(String id, Frontier frontier, Master master, Messenger msgr) {
+    public void initWorkerEssentials(String id, Frontier frontier, Master master) {
         setID(id);
         setFrontier(frontier);
         setMaster(master);

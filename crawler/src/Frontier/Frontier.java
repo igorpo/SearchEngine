@@ -7,22 +7,35 @@ import java.io.IOException;
  */
 public interface Frontier {
 
+    /**
+     * init the thread with the given ID
+     * @param threadID
+     */
     public void init(String threadID);
 
-    /*
-     * Pop next URL from queue
-     * Returns URL
+    /**
+     * Poll next URL from queue
+     * @return head of queue
      */
     public String poll() throws IOException;
 
-    /*
-     * Provide URL to push to queue
+    /**
+     * Provide a url to push to the queue
+     * @param URL url to be pushed
+     * @throws IOException
      */
     public void enqueue(String URL) throws IOException;
 
-    /*
+    /**
      * Returns number of remaining URLs in worker's frontier queue
+     * @return size of queue
      */
     public int size();
+
+    /**
+     * Convenience method for checking empty queue
+     * @return true if empty, false otherwise
+     */
+    public boolean isEmpty();
 
 }
