@@ -85,6 +85,16 @@ public class Master {
         // send the messenger (crawler) the termination request in case we want to do something else
         this.msgr.terminate(threadID);
 
+        // if we hit our mark, we just want to end
+        if (getCurrentNumDocumentsProcessed() >= getMaxDocuments()) {
+            for (int i = 0; i < getCurrentNumThreads(); i++) {
+                this.msgr.terminate(String.valueOf(i));
+            }
+            return;
+        }
+
+        // try to init more threads to make up for potentially dead ones
+        initThreads();
     }
 
     /**
