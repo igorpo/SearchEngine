@@ -86,7 +86,7 @@ public class Master {
         this.msgr.terminate(threadID);
 
         // if we hit our mark, we just want to end
-        if (getCurrentNumDocumentsProcessed() >= getMaxDocuments()) {
+        if (achievedLimit()) {
             for (int i = 0; i < getCurrentNumThreads(); i++) {
                 this.msgr.terminate(String.valueOf(i));
             }
@@ -95,6 +95,15 @@ public class Master {
 
         // try to init more threads to make up for potentially dead ones
         initThreads();
+    }
+
+    /**
+     * Checks whether or not we have achieved the limit of the documents collected
+     * taking into account the infinity possibility.
+     * @return true if limit achieved, false if not or if limit is infinity
+     */
+    public boolean achievedLimit() {
+        return getCurrentNumDocumentsProcessed() >= getMaxDocuments() && getMaxDocuments() != -1;
     }
 
     /**
