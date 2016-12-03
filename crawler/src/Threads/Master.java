@@ -2,8 +2,14 @@ package Threads;
 
 import Crawler.Messenger;
 import Frontier.Frontier;
+import Robots.RobotsTxtInfo;
+import S3.S3Wrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -46,6 +52,26 @@ public class Master {
     private int currentNumDocumentsProcessed;
 
     /**
+     * Keeps track of hosts visited for crawl delay
+     */
+    protected ConcurrentHashMap<String, Long> crawlTimes;
+
+    /**
+     * Keeps track of robots for base link
+     */
+    protected ConcurrentHashMap<String, RobotsTxtInfo> robotsForUrl;
+
+    /**
+     * Keep track of visited links
+     */
+    protected HashSet<String> visitedUrls;
+
+    /**
+     * Bucket name for S3 db
+     */
+    static final String BUCKET_NAME = "cis-455";
+
+    /**
      * The Master class controls the extended specified thread class
      * that will be provided.
      * @param maxThreads Max number of threads to be run for this job
@@ -59,6 +85,10 @@ public class Master {
         this.msgr = msgr;
         this.maxDocuments = maxDocuments;
         this.currentNumThreads = this.currentNumDocumentsProcessed = 0;
+        robotsForUrl = new ConcurrentHashMap<>();
+        crawlTimes = new ConcurrentHashMap<>();
+        visitedUrls = new HashSet<>();
+        S3Wrapper.init(BUCKET_NAME);
         try {
             initThreads();
         } catch (Exception e) {
@@ -138,6 +168,27 @@ public class Master {
      */
     public synchronized void increaseProcessedDocCount() {
         this.currentNumDocumentsProcessed++;
+    }
+
+    /**
+     * Add a url that has been seen
+     * @param url url that we want to add
+     */
+    public void addSeenUrl(String url) {
+        synchronized (visitedUrls) {
+            visitedUrls.add(url);
+        }
+    }
+
+    /**
+     * Have we seen the url
+     * @param url url to check for
+     * @return true if seen, false otherwise
+     */
+    public boolean haveSeenUrl(String url) {
+        synchronized (visitedUrls) {
+            return visitedUrls.contains(url);
+        }
     }
 
     /**
