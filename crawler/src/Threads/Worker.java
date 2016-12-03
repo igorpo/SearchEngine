@@ -258,15 +258,7 @@ public class Worker extends Thread {
                 }
             }
         }
-    }
-
-    /**
-     * Apply processing to the url that we are working on. This
-     * includes extracting links, etc.
-     * @param url url extracted from frontier
-     */
-    public void processLink(String url) {
-
+        master.terminateThread(this.id); // thread finished once we are here
     }
 
     /**
