@@ -73,7 +73,6 @@ public class S3Wrapper {
                 for (String s : metaData.keySet()) {
                     metadata.addUserMetadata(s, metaData.get(s));
                 }
-                metadata.addUserMetadata("timestamp", "igor");
             }
 
             // Creating request with meta data and ACL
