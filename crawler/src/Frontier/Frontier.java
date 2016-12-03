@@ -30,12 +30,12 @@ public interface Frontier {
      * Returns number of remaining URLs in worker's frontier queue
      * @return size of queue
      */
-    public int size();
+    public int size() throws IOException;
 
     /**
      * Convenience method for checking empty queue
      * @return true if empty, false otherwise
      */
-    public boolean isEmpty();
+    public boolean isEmpty() throws IOException;
 
 }

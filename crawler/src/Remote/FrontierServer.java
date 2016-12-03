@@ -25,7 +25,26 @@ public class FrontierServer {
                     response.status(403);
                     return "Not Authorized";
                 }
-                return "Poll with ThreadID = " + request.params("threadID");
+
+                String threadID = request.params("threadID");
+
+                return SyncMultQueue.poll(threadID);
+            }
+        });
+
+        Spark.get(new Route("/:threadID/size") {
+
+            @Override
+            public Object handle(Request request, Response response) {
+                if (request.headers("Secret") == null ||
+                        !request.headers("secret").equals(secret)) {
+                    response.status(403);
+                    return "Not Authorized";
+                }
+
+                String threadID = request.params("threadID");
+
+                return SyncMultQueue.size(threadID);
             }
         });
 
@@ -38,7 +57,11 @@ public class FrontierServer {
                     response.status(403);
                     return "Not Authorized";
                 }
-                return "Enqueue with ThreadID = " + request.params("threadID");
+
+                String threadID = request.params("threadID");
+                String url = request.queryParams("url");
+
+                return SyncMultQueue.enqueue(threadID, url);
             }
         });
     }

@@ -42,12 +42,27 @@ public class FrontierWrapper implements Frontier {
     }
 
     @Override
-    public int size() {
-        return 0;
+    public int size() throws IOException {
+        HttpURLConnection conn = sendReq("size",null, "GET");
+        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new RuntimeException("Job definition request failed");
+        }
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                conn.getInputStream()));
+
+        String inputLine;
+        StringBuffer stringBuffer = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null)
+            stringBuffer.append(inputLine);
+        in.close();
+
+        return Integer.parseInt(stringBuffer.toString());
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isEmpty() throws IOException {
         return size() == 0;
     }
 
@@ -73,8 +88,8 @@ public class FrontierWrapper implements Frontier {
 
         if (method.equals("POST")) {
             conn.setRequestProperty("Content-Type", "application/json");
-
             OutputStream os = conn.getOutputStream();
+
             if (parameters != null) {
                 byte[] toSend = parameters.getBytes();
                 os.write(toSend);
