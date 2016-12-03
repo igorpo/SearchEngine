@@ -5,12 +5,13 @@
 crawler/.idea/
 .DS_Store
 crawler/.idea/workspace.xml
+crawler/aws-java-sdk-1.11.61/
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.ear
 

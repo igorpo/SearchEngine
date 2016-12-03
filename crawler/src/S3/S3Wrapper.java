@@ -2,6 +2,7 @@ package S3;
 /**
  * Created by YagilB on 29/11/2016.
  */
+
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
@@ -11,8 +12,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.*;
+import org.apache.commons.codec.binary.Base32;
 
 import java.io.*;
+import java.util.Map;
 
 public class S3Wrapper {
     private static AWSCredentials credentials = null;
@@ -53,11 +56,34 @@ public class S3Wrapper {
     }
 
     public static void addDocument(String key, String content) {
+        addDocument(key, content, null);
+    }
+
+    public static void addDocument(String key, String content, Map<String, String> metaData) {
         System.out.println("Uploading a new object to S3 from a file\n");
         try {
 
-            s3.putObject(new PutObjectRequest(bucketName, key, createFile(content))
-                    .withAccessControlList(acl));
+            String safeKey = new Base32().encodeAsString(key.getBytes());
+
+            // Adding user meta data
+
+            ObjectMetadata metadata = new ObjectMetadata();
+
+            if (metaData != null) {
+                for (String s : metaData.keySet()) {
+                    metadata.addUserMetadata(s, metaData.get(s));
+                }
+                metadata.addUserMetadata("timestamp", "igor");
+            }
+
+            // Creating request with meta data and ACL
+
+            PutObjectRequest req = new PutObjectRequest(bucketName, safeKey, createFile(content))
+                    .withAccessControlList(acl).withMetadata(metadata);
+
+            // Saving the object to S3
+
+            s3.putObject(req);
 
         } catch (IOException e) {
 
@@ -85,26 +111,22 @@ public class S3Wrapper {
     }
 
     public static InputStream getDocument(String key) {
-         /*
-         * Download an object - When you download an object, you get all of
-         * the object's metadata and a stream from which to read the contents.
-         * It's important to read the contents of the stream as quickly as
-         * possibly since the data is streamed directly from Amazon S3 and your
-         * network connection will remain open until you read all the data or
-         * close the input stream.
-         *
-         * GetObjectRequest also supports several other options, including
-         * conditional downloading of objects based on modification times,
-         * ETags, and selectively downloading a range of an object.
-         */
+        String safeKey = new Base32().encodeAsString(key.getBytes());
 
         System.out.println("Downloading an object");
 
-        S3Object document = s3.getObject(new GetObjectRequest(bucketName, key));
+        S3Object document = s3.getObject(new GetObjectRequest(bucketName, safeKey));
+
 
         System.out.println("Content-Type: "  + document.getObjectMetadata().getContentType());
+        System.out.println("Meta data:");
+
+        for (String s : document.getObjectMetadata().getUserMetadata().keySet()) {
+            System.out.println(s + " : " + document.getObjectMetadata().getUserMetaDataOf(s));
+        }
 
         InputStream stream = null;
+
         try {
 
             stream = document.getObjectContent();
@@ -118,11 +140,14 @@ public class S3Wrapper {
             System.out.println("AWS Error Code:   " + ase.getErrorCode());
             System.out.println("Error Type:       " + ase.getErrorType());
             System.out.println("Request ID:       " + ase.getRequestId());
+
         } catch (AmazonClientException ace) {
+
             System.out.println("Caught an AmazonClientException, which means the client encountered "
                     + "a serious internal problem while trying to communicate with S3, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message: " + ace.getMessage());
+
         }
 
         return stream;
@@ -132,14 +157,6 @@ public class S3Wrapper {
 
 
     public static void listObjects() {
-        /*
-             * List objects in your bucket by prefix - There are many options for
-             * listing the objects in your bucket.  Keep in mind that buckets with
-             * many objects might truncate their results when listing their objects,
-             * so be sure to check if the returned object listing is truncated, and
-             * use the AmazonS3.listNextBatchOfObjects(...) operation to retrieve
-             * additional results.
-             */
         System.out.println("Listing objects");
         ObjectListing objectListing = s3.listObjects(new ListObjectsRequest()
                 .withBucketName(bucketName)

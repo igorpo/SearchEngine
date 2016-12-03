@@ -16,12 +16,12 @@ public class FrontierServer {
 
     public static void main(String[] args) {
 
-
         Spark.get(new Route("/:threadID/poll") {
 
             @Override
             public Object handle(Request request, Response response) {
-                if (!request.headers("secret").equals(secret)) {
+                if (request.headers("Secret") == null ||
+                        !request.headers("secret").equals(secret)) {
                     response.status(403);
                     return "Not Authorized";
                 }
@@ -29,12 +29,12 @@ public class FrontierServer {
             }
         });
 
-
         Spark.post(new Route("/:threadID/enqueue") {
 
             @Override
             public Object handle(Request request, Response response) {
-                if (!request.headers("secret").equals(secret)) {
+                if (request.headers("Secret") == null ||
+                        !request.headers("secret").equals(secret)) {
                     response.status(403);
                     return "Not Authorized";
                 }
