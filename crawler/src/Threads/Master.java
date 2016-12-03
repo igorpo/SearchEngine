@@ -2,8 +2,12 @@ package Threads;
 
 import Crawler.Messenger;
 import Frontier.Frontier;
+import Robots.RobotsTxtInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -44,6 +48,16 @@ public class Master {
      * Current number of processed docs
      */
     private int currentNumDocumentsProcessed;
+
+    /**
+     * Keeps track of hosts visited for crawl delay
+     */
+    protected ConcurrentHashMap<String, Long> crawlTimes;
+
+    /**
+     * Keeps track of robots for base link
+     */
+    protected ConcurrentHashMap<String, RobotsTxtInfo> robotsForUrl;
 
     /**
      * The Master class controls the extended specified thread class
