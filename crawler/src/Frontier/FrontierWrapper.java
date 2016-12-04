@@ -1,11 +1,9 @@
 package Frontier;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by YagilB on 01/12/2016.
@@ -13,7 +11,7 @@ import java.net.URL;
 public class FrontierWrapper implements Frontier {
 
     // AWS
-    private static String remoteAddr = "0.0.0.0:4567"; // the EC2 instance address
+    private static String remoteAddr = "http://0.0.0.0:4567"; // the EC2 instance address
     private static String secret = "vix0jw1H6Vi/wBRAB9QDGHxFPOJtUm9e2r9GuANmjrY=";
 
     private static String threadID = "";
@@ -26,8 +24,9 @@ public class FrontierWrapper implements Frontier {
     @Override
     public String poll() throws RuntimeException, IOException {
         HttpURLConnection conn = sendReq("poll",null, "GET");
+
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new RuntimeException("Job definition request failed");
+            throw new RuntimeException("Attempt to poll for threadID =  " +threadID + " failed. Server said: " + conn.getResponseCode());
         }
 
         StringBuffer stringBuffer = new StringBuffer();
@@ -44,8 +43,9 @@ public class FrontierWrapper implements Frontier {
     @Override
     public int size() throws IOException {
         HttpURLConnection conn = sendReq("size",null, "GET");
+
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new RuntimeException("Job definition request failed");
+            throw new RuntimeException("Attempt to get size of threadID " + threadID + " failed. Server said: " + conn.getResponseCode());
         }
 
         BufferedReader in = new BufferedReader(new InputStreamReader(
@@ -72,7 +72,7 @@ public class FrontierWrapper implements Frontier {
         HttpURLConnection conn = sendReq("enqueue", "url="+URL, "POST");
 
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new RuntimeException("Job definition request failed");
+            throw new RuntimeException("Attempt to enqueue " +URL + " failed. Server said: " + conn.getResponseCode());
         }
 
     }
@@ -83,19 +83,22 @@ public class FrontierWrapper implements Frontier {
 
         HttpURLConnection conn = (HttpURLConnection)url.openConnection();
         conn.setRequestProperty("Secret", this.secret);
-        conn.setDoOutput(true);
+
         conn.setRequestMethod(method);
 
         if (method.equals("POST")) {
-            conn.setRequestProperty("Content-Type", "application/json");
-            OutputStream os = conn.getOutputStream();
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             if (parameters != null) {
-                byte[] toSend = parameters.getBytes();
+                byte[] toSend = parameters.getBytes(StandardCharsets.UTF_8);
+                conn.setRequestProperty("Content-Length", Integer.toString(toSend.length));
+                conn.setRequestProperty("charset", "utf-8");
+                DataOutputStream os = new DataOutputStream(conn.getOutputStream());
                 os.write(toSend);
+                os.flush();
             }
 
-            os.flush();
         } else {
             conn.getOutputStream();
         }

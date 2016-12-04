@@ -77,13 +77,15 @@ public class Worker extends Thread {
      * @param id id
      * @param master master of the threads
      */
-    public void initWorkerEssentials(String id, Master master) {
-        Frontier frontier = new FrontierWrapper();
-        frontier.init(this.getID());
+    public void initWorkerEssentials(String id, Master master) throws IOException {
         setID(id);
+        Frontier frontier = new FrontierWrapper();
+        frontier.init(getID());
+        frontier.enqueue("http://www.nytimes.com");
         setFrontier(frontier);
         setMaster(master);
         setMessenger(msgr);
+
     }
 
     /**

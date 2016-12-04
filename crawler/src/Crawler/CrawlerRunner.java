@@ -14,15 +14,15 @@ public class CrawlerRunner {
     private static final Log log = LogFactory.getLog(CrawlerRunner.class);
 
     public static void main(String[] args) throws IOException {
-        int maxDocuments = -1;
-        int maxThreads = 8;
+        int maxDocuments = 10;
+        int maxThreads = 1;
 
-        if (args.length < 1) {
-            log.info("Usage is <seed url> [maxThreads maxDocs]\nDefault is 8 threads and unlimited documents");
-            return;
-        }
+//        if (args.length < 1) {
+//            log.info("Usage is [maxThreads maxDocs]\nDefault is 8 threads and unlimited documents");
+//            return;
+//        }
 
-        if (args.length == 2) {
+        if (args.length == 1) {
             try {
                 maxThreads = Integer.parseInt(args[1]);
             } catch (NumberFormatException e) {
@@ -31,7 +31,7 @@ public class CrawlerRunner {
             }
         }
 
-        if (args.length == 3) {
+        if (args.length == 2) {
             try {
                 maxDocuments = Integer.parseInt(args[2]);
             } catch (NumberFormatException e) {
@@ -40,16 +40,14 @@ public class CrawlerRunner {
             }
         }
 
-        if (args.length >= 4) {
-            log.info("Usage is <seed url> [maxThreads maxDocs]\nDefault is 8 threads and unlimited documents");
+        if (args.length >= 3) {
+            log.info("Usage is [maxThreads maxDocs]\nDefault is 8 threads and unlimited documents");
             return;
         }
-        String seed = args[0];
 
-        log.info("Initializing the crawler with seed(s) " + seed + " with maximum number of " + maxThreads + " threads " +
+        log.info("Initializing the crawler with whitelisted seed(s) with maximum number of " + maxThreads + " threads " +
                 "and searching for " + ((maxDocuments != -1) ? maxDocuments : "unlimited") + " documents.");
 
-        Frontier frontier = new FrontierWrapper();
-        Crawler crawler = new Crawler(maxThreads, maxDocuments, frontier);
+        Crawler crawler = new Crawler(maxThreads, maxDocuments);
     }
 }

@@ -7,9 +7,9 @@ import S3.S3Wrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -77,11 +77,9 @@ public class Master {
      * @param maxThreads Max number of threads to be run for this job
      * @param maxDocuments Max number of documents to be crawled
      *                     If -1, then we keep going forever
-     * @param frontier Frontier queue of URLs
      */
-    public Master(int maxThreads, int maxDocuments, Frontier frontier, Messenger msgr) {
+    public Master(int maxThreads, int maxDocuments, Messenger msgr) {
         this.maxThreads = maxThreads;
-        this.frontier = frontier;
         this.msgr = msgr;
         this.maxDocuments = maxDocuments;
         this.currentNumThreads = this.currentNumDocumentsProcessed = 0;
@@ -103,10 +101,17 @@ public class Master {
      */
     public synchronized void initThreads() {
         int threadsToStart = maxThreads - currentNumThreads;
+        log.info(threadsToStart + " THREADS TO START");
         for (int i = 0; i < threadsToStart; i++) {
-            Worker workerThread = new Worker();
-            workerThread.initWorkerEssentials(increaseThreadCount(), this);
-            workerThread.start();
+            try {
+                Worker workerThread = new Worker();
+                String id = increaseThreadCount();
+                log.info("THREAD WITH ID " + id + " CREATED");
+                workerThread.initWorkerEssentials(id, this);
+                workerThread.start();
+            } catch (IOException e) {
+                log.error("Failed to contact the remote queue service " + e.getMessage());
+            }
         }
     }
 

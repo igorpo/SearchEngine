@@ -61,6 +61,7 @@ public class FrontierServer {
                 String threadID = request.params("threadID");
                 String url = request.queryParams("url");
 
+                System.out.println("CALLED /" + threadID + "/enqueue with url = " + url);
                 return SyncMultQueue.enqueue(threadID, url);
             }
         });

@@ -25,6 +25,7 @@ public class SyncMultQueue {
     public static boolean enqueue(String threadID, String obj) {
         BlockingQueue<String> queue = subqueues.get(threadID);
         if (queue == null) {
+            System.out.println("THREADID == " + threadID + " and queue doesn't exist");
             queue = new ArrayBlockingQueue(QUEUE_SIZE);
             subqueues.put(threadID, queue);
         }
