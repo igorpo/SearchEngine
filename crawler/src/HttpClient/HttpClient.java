@@ -159,6 +159,9 @@ public class HttpClient {
                 }
                 setProperty(CONTENT_TYPE, getResponseHeader(CONTENT_TYPE));
                 setProperty(CONTENT_LENGTH, getResponseHeader(CONTENT_LENGTH));
+                if (status.equals("404")) {
+                    return false;
+                }
                 if (status.equals("301") || status.equals("302") || status.equals("303")) {
                     setProperty(LOCATION, getResponseHeader(LOCATION)); // here we set the redirect
                 }

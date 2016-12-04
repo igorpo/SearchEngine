@@ -31,7 +31,8 @@ public class Worker extends Thread {
     private static final String IS_WWW_REQUIRED = "#www-required";
     private static final String BAD = "http://null:0null";
     private static final Log log = LogFactory.getLog(Worker.class);
-
+    private static final int MAX_TRIES = 10;
+    private static final int WAIT_TIME = 1;
     /**
      * Set the id of the thread
      * @param id id generated for this thread
@@ -77,11 +78,31 @@ public class Worker extends Thread {
      * @param id id
      * @param master master of the threads
      */
-    public void initWorkerEssentials(String id, Master master) throws IOException {
+    public void initWorkerEssentials(String id, Master master, Messenger msgr) throws IOException {
         setID(id);
         Frontier frontier = new FrontierWrapper();
         frontier.init(getID());
-        frontier.enqueue("http://www.nytimes.com");
+        log.info("INIT FRONTIER WITH ID == " + getID());
+//        frontier.enqueue("http://www.nytimes.com");
+        switch (getID()) {
+            case "0":
+                frontier.enqueue("http://kieraj.com");
+                break;
+            case "1":
+                frontier.enqueue("http://www.wsj.com");
+                break;
+            case "2":
+                frontier.enqueue("http://www.cnn.com");
+                break;
+            case "3":
+                frontier.enqueue("http://www.bbc.com");
+                break;
+            case "4":
+                frontier.enqueue("http://www.apple.com");
+                break;
+            default:
+                break;
+        }
         setFrontier(frontier);
         setMaster(master);
         setMessenger(msgr);
@@ -95,7 +116,27 @@ public class Worker extends Thread {
     public void run() {
 
         try {
-            while (!this.frontier.isEmpty() && master.getCurrentNumDocumentsProcessed() != master.getMaxDocuments()) {
+            while (master.getCurrentNumDocumentsProcessed() != master.getMaxDocuments()) {
+                log.info("Running workerID " + this.getID());
+                // Should I sleep, or keep going
+                if (this.frontier.isEmpty()) {
+                    int trials = 0;
+
+                    while (true) {
+                        log.info("Checking if queue is empty for workerID " + this.getID());
+                        if (!this.frontier.isEmpty()) {
+                            break;
+                        }
+                        if (trials == MAX_TRIES) {
+                            master.terminateThread(this.getID());
+                            return;
+                        }
+                        trials++;
+                        Thread.sleep(WAIT_TIME * 1000);
+                    }
+                }
+
+                // Keep going
                 String url = null;
                 try {
                     url = normalize(this.frontier.poll());
@@ -249,10 +290,15 @@ public class Worker extends Thread {
                                 // TODO save thread id + hash in metadata (S3Wrapper)
                                 // important bc frontiers siloed by worker
     //                            db.storeDocument(url, body, now, contentType);
+
+                                if (msgr ==  null)
+                                    log.error("MSGR IS NULL");
+
                                 msgr.message(this.id, "Downloading: " + url);
                                 master.increaseProcessedDocCount();
     //                            log.info(url + ": Downloading");
                                 if (docType.equals(HttpClient.HTML)) {
+                                    log.info("EXTRACTING LINKS FOR URL == " + url);
                                     extractLinks(body, url);
                                 }
 
@@ -264,9 +310,11 @@ public class Worker extends Thread {
                 }
             }
         } catch (IOException e) {
-            log.error("Could not reach remote queue... terminating thread");
+            log.error("Could not reach remote queue... terminating thread " + e.getMessage());
+
+        } catch (InterruptedException e) {
+            log.error("Could not sleep... terminating thread " + e.getMessage());
         }
-        master.terminateThread(this.id); // thread finished once we are here
     }
 
     /**

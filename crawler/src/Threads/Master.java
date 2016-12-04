@@ -100,14 +100,13 @@ public class Master {
      * they finish working.
      */
     public synchronized void initThreads() {
-        int threadsToStart = maxThreads - currentNumThreads;
-        log.info(threadsToStart + " THREADS TO START");
-        for (int i = 0; i < threadsToStart; i++) {
+        for (int i = 0; i < getMaxThreads(); i++) {
             try {
                 Worker workerThread = new Worker();
-                String id = increaseThreadCount();
+//                String id = increaseThreadCount();
+                String id = String.valueOf(i);
                 log.info("THREAD WITH ID " + id + " CREATED");
-                workerThread.initWorkerEssentials(id, this);
+                workerThread.initWorkerEssentials(id, this, this.msgr);
                 workerThread.start();
             } catch (IOException e) {
                 log.error("Failed to contact the remote queue service " + e.getMessage());
@@ -126,21 +125,21 @@ public class Master {
         this.msgr.terminate(threadID);
 
         // if we hit our mark, we just want to end
-        if (achievedLimit()) {
-            // TODO potentially need list/map to terminate remaining threads
+//        if (achievedLimit()) {
+//            TODO potentially need list/map to terminate remaining threads
 //            for (int i = 0; i < getCurrentNumThreads(); i++) {
 //
 //            }
-            this.msgr.complete();
-            return;
-        }
-
-        try {
-            // try to init more threads to make up for potentially dead ones
-            initThreads();
-        } catch (Exception e) {
-            log.error("Could not init more threads, moving on: " + e.getMessage());
-        }
+//            this.msgr.complete();
+//            return;
+//        }
+//
+//        try {
+//            // try to init more threads to make up for potentially dead ones
+//            initThreads();
+//        } catch (Exception e) {
+//            log.error("Could not init more threads, moving on: " + e.getMessage());
+//        }
     }
 
     /**

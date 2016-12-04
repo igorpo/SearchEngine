@@ -33,9 +33,9 @@ public class FrontierServer {
         });
 
         Spark.get(new Route("/:threadID/size") {
-
             @Override
             public Object handle(Request request, Response response) {
+                System.out.println("got request: /"+request.params("threadID")+"/size");
                 if (request.headers("Secret") == null ||
                         !request.headers("secret").equals(secret)) {
                     response.status(403);
