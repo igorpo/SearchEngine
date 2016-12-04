@@ -11,6 +11,7 @@ import org.apache.commons.logging.LogFactory;
 public class Crawler implements Messenger {
 
     private static final Log log = LogFactory.getLog(Crawler.class);
+    private Master master;
 
     /**
      * The crawler, which is a Messenger meaning it is able to
@@ -22,7 +23,7 @@ public class Crawler implements Messenger {
      * @param frontier frontier queue
      */
     public Crawler(int maxThreads, int maxDocuments, Frontier frontier) {
-        Master master = new Master(maxThreads, maxDocuments, frontier, this);
+        this.master = new Master(maxThreads, maxDocuments, frontier, this);
     }
 
     /**
@@ -40,6 +41,14 @@ public class Crawler implements Messenger {
      */
     public void message(String threadID, String msg) {
         log.info("[" + threadID + "] " + msg);
+    }
+
+    /**
+     * Launched when we are done the crawl
+     */
+    public void complete() {
+        log.info("Finished the crawl with " + master.getCurrentNumDocumentsProcessed() + " documents processed!");
+        System.exit(0);
     }
 
 }

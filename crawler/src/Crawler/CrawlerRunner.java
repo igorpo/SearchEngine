@@ -1,7 +1,6 @@
 package Crawler;
 
-import Frontier.Frontier;
-import Testing.LocalFrontier;
+import Frontier.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -50,8 +49,7 @@ public class CrawlerRunner {
         log.info("Initializing the crawler with seed(s) " + seed + " with maximum number of " + maxThreads + " threads " +
                 "and searching for " + ((maxDocuments != -1) ? maxDocuments : "unlimited") + " documents.");
 
-        Frontier frontier = new LocalFrontier();
+        Frontier frontier = new FrontierWrapper();
         Crawler crawler = new Crawler(maxThreads, maxDocuments, frontier);
-        frontier.enqueue(seed);
     }
 }

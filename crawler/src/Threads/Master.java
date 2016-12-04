@@ -105,7 +105,7 @@ public class Master {
         int threadsToStart = maxThreads - currentNumThreads;
         for (int i = 0; i < threadsToStart; i++) {
             Worker workerThread = new Worker();
-            workerThread.initWorkerEssentials(increaseThreadCount(), this.frontier, this);
+            workerThread.initWorkerEssentials(increaseThreadCount(), this);
             workerThread.start();
         }
     }
@@ -121,11 +121,12 @@ public class Master {
         this.msgr.terminate(threadID);
 
         // if we hit our mark, we just want to end
-        // TODO refactor, this might not be needed or go here, need to figure out later
         if (achievedLimit()) {
-            for (int i = 0; i < getCurrentNumThreads(); i++) {
-                this.msgr.terminate(String.valueOf(i));
-            }
+            // TODO potentially need list/map to terminate remaining threads
+//            for (int i = 0; i < getCurrentNumThreads(); i++) {
+//
+//            }
+            this.msgr.complete();
             return;
         }
 

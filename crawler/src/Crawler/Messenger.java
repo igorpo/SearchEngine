@@ -14,4 +14,9 @@ public interface Messenger {
      * @param threadID
      */
     public void terminate(String threadID);
+
+    /**
+     * If we are done, yay
+     */
+    public void complete();
 }

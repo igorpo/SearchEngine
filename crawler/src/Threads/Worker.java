@@ -1,7 +1,7 @@
 package Threads;
 
 import Crawler.Messenger;
-import Frontier.Frontier;
+import Frontier.*;
 import HttpClient.HttpClient;
 import Robots.*;
 import URL.URLInfo;
@@ -75,10 +75,11 @@ public class Worker extends Thread {
     /**
      * Used to let the worker know of his ID, the master, and the shared frontier queue
      * @param id id
-     * @param frontier frontier queue of links
      * @param master master of the threads
      */
-    public void initWorkerEssentials(String id, Frontier frontier, Master master) {
+    public void initWorkerEssentials(String id, Master master) {
+        Frontier frontier = new FrontierWrapper();
+        frontier.init(this.getID());
         setID(id);
         setFrontier(frontier);
         setMaster(master);
@@ -90,173 +91,178 @@ public class Worker extends Thread {
      */
     @Override
     public void run() {
-        while (!this.frontier.isEmpty() && master.getCurrentNumDocumentsProcessed() != master.getMaxDocuments()) {
-            String url = null;
-            try {
-                url = normalize(this.frontier.poll());
-            } catch (IOException e) {
-                log.error("Error with polling the queue... Continuing");
-                continue;
-            }
-            if (!master.haveSeenUrl(url) && !url.equals(BAD)) {
-                master.addSeenUrl(url);
-                boolean isSecure = url.contains("https://");
-                log.info("\n\nFetching information for URL: " + url);
-                URLInfo normalizedInfo = new URLInfo(url);
 
-                // look for robots.txt
-                RobotsTxtInfo rInfo = new RobotsTxtInfo();
-                if (master.robotsForUrl.containsKey(normalizedInfo.getHostName())) {
-                    rInfo = master.robotsForUrl.get(normalizedInfo.getHostName());
-                } else {
-                    Robots robotParser = new Robots(url, normalizedInfo);
-                    rInfo = robotParser.getRobotsTxt();
-                    master.robotsForUrl.put(normalizedInfo.getHostName(), rInfo);
-                    master.crawlTimes.put(normalizedInfo.getHostName(), new Date().getTime());
+        try {
+            while (!this.frontier.isEmpty() && master.getCurrentNumDocumentsProcessed() != master.getMaxDocuments()) {
+                String url = null;
+                try {
+                    url = normalize(this.frontier.poll());
+                } catch (IOException e) {
+                    log.error("Error with polling the queue... Continuing");
+                    continue;
                 }
-                int crawlDelay = 0;
-                if (rInfo != null && (rInfo.containsUserAgent("*") || rInfo.containsUserAgent(HttpClient.CIS455_CRAWLER))) {
-                    if (rInfo.containsUserAgent(HttpClient.CIS455_CRAWLER)) {
-                        ArrayList<String> allowed = rInfo.getAllowedLinks(HttpClient.CIS455_CRAWLER);
-                        ArrayList<String> disallowed = rInfo.getDisallowedLinks(HttpClient.CIS455_CRAWLER);
+                if (!master.haveSeenUrl(url) && !url.equals(BAD)) {
+                    master.addSeenUrl(url);
+                    boolean isSecure = url.contains("https://");
+                    log.info("\n\nFetching information for URL: " + url);
+                    URLInfo normalizedInfo = new URLInfo(url);
 
-                        if (rInfo.hasCrawlDelay(HttpClient.CIS455_CRAWLER)) {
-                            crawlDelay = rInfo.getCrawlDelay(HttpClient.CIS455_CRAWLER);
-                        }
-
-                        if (restrictedPath(url, allowed, disallowed)) {
-                            log.info(url + ": Restricted. Not downloading");
-                            System.out.println(url + ": Restricted. Not downloading");
-                            continue;
-                        }
-                    } else if (rInfo.containsUserAgent("*")) {
-                        ArrayList<String> allowed = rInfo.getAllowedLinks("*");
-                        ArrayList<String> disallowed = rInfo.getDisallowedLinks("*");
-                        if (rInfo.hasCrawlDelay("*")) {
-                            crawlDelay = rInfo.getCrawlDelay("*");
-                        }
-
-                        if (restrictedPath(url, allowed, disallowed)) {
-                            log.info(url + ": Restricted. Not downloading");
-                            System.out.println(url + ": Restricted. Not downloading");
-                            continue;
-                        }
+                    // look for robots.txt
+                    RobotsTxtInfo rInfo = new RobotsTxtInfo();
+                    if (master.robotsForUrl.containsKey(normalizedInfo.getHostName())) {
+                        rInfo = master.robotsForUrl.get(normalizedInfo.getHostName());
+                    } else {
+                        Robots robotParser = new Robots(url, normalizedInfo);
+                        rInfo = robotParser.getRobotsTxt();
+                        master.robotsForUrl.put(normalizedInfo.getHostName(), rInfo);
+                        master.crawlTimes.put(normalizedInfo.getHostName(), new Date().getTime());
                     }
-                }
+                    int crawlDelay = 0;
+                    if (rInfo != null && (rInfo.containsUserAgent("*") || rInfo.containsUserAgent(HttpClient.CIS455_CRAWLER))) {
+                        if (rInfo.containsUserAgent(HttpClient.CIS455_CRAWLER)) {
+                            ArrayList<String> allowed = rInfo.getAllowedLinks(HttpClient.CIS455_CRAWLER);
+                            ArrayList<String> disallowed = rInfo.getDisallowedLinks(HttpClient.CIS455_CRAWLER);
 
-                // check crawl delay
-                if (master.crawlTimes.containsKey(normalizedInfo.getHostName())) {
-                    long lastCrawledAt = master.crawlTimes.get(normalizedInfo.getHostName());
-                    if ((new Date().getTime() - lastCrawledAt) < crawlDelay * 1000) {
-                        log.info("Experiencing crawl delay... ");
-                        try {
-                            Thread.sleep(crawlDelay * 1000);
-                        } catch (InterruptedException e) {
-                            log.error("Interrupted while waiting for crawl delay to finish " + e.getMessage());
-                            continue;
-                        }
-                    }
-                }
-
-                HttpClient client = new HttpClient();
-                Date dateLastAccessed = null;
-                //TODO fix this
-//                Document doc = db.retrieveDocument(url);
-//                if (doc != null) {
-//                    log.info(url + " was found in the database");
-//                    dateLastAccessed = doc.getLastAccessedTime();
-//                }
-                if (client.execute("HEAD",
-                        isSecure,
-                        normalizedInfo.getFilePath(),
-                        url,
-                        normalizedInfo.getPortNo(),
-                        normalizedInfo.getHostName(),
-                        dateLastAccessed)) {
-                    String statusCode = client.getProperty(HttpClient.RESPONSE_STATUS_CODE);
-                    if (statusCode.equals("304")) {
-                        log.info(url + ": Not modified");
-                        continue;
-                    }
-
-                    // check redirected
-                    String redirectedTo = client.getProperty(HttpClient.LOCATION);
-                    if (redirectedTo != null) {
-                        log.info("Redirecting " + url + " to " + redirectedTo);
-                        if (redirectedTo.startsWith("http")) {
-                            // absolute url
-                            try {
-                                this.frontier.enqueue(redirectedTo + IS_WWW_REQUIRED);
-                            } catch (IOException e) {
-                                log.error("Error in enqueuing a url " + e.getMessage());
+                            if (rInfo.hasCrawlDelay(HttpClient.CIS455_CRAWLER)) {
+                                crawlDelay = rInfo.getCrawlDelay(HttpClient.CIS455_CRAWLER);
                             }
-                        } else {
-                            try {
-                                URL base = new URL(url);
-                                String absolute = new URL(base, redirectedTo).toString();
-                                try {
-                                    this.frontier.enqueue(absolute + IS_WWW_REQUIRED);
-                                } catch (IOException e) {
-                                    log.error("Error in enqueuing a url " + e.getMessage());
-                                }
-                            } catch (MalformedURLException e) {
-                                log.error("Could not create redirect url. Continuing... ");
+
+                            if (restrictedPath(url, allowed, disallowed)) {
+                                msgr.message(this.id, "Restricted: " + url + ". Not downloading");
+                                continue;
+                            }
+                        } else if (rInfo.containsUserAgent("*")) {
+                            ArrayList<String> allowed = rInfo.getAllowedLinks("*");
+                            ArrayList<String> disallowed = rInfo.getDisallowedLinks("*");
+                            if (rInfo.hasCrawlDelay("*")) {
+                                crawlDelay = rInfo.getCrawlDelay("*");
+                            }
+
+                            if (restrictedPath(url, allowed, disallowed)) {
+                                msgr.message(this.id, "Restricted: " + url + ". Not downloading");
+                                continue;
                             }
                         }
-                        continue;
                     }
 
-                    String contentType = client.getProperty(HttpClient.CONTENT_TYPE);
-                    String contentLength = client.getProperty(HttpClient.CONTENT_LENGTH);
-                    if (contentLength == null) {
-                        contentLength = "0";
-                    }
-                    log.info(url + " has content type " + contentType + " and content length of " + contentLength + " bytes");
-                    if (contentType == null || !isCrawlableFile(contentType)) {
-                        log.info(normalizedInfo.getFilePath() + " is not the correct MIME type to crawl. Continuing...");
-                        continue;
-                    }
-
-
-                    try {
-                        // TODO refactor into switching to other tasks from the queue instead of sleep
-                        if (crawlDelay > 0) {
-                            log.info("Waiting out crawl delay between HEAD and GET of " + normalizedInfo.getHostName());
-                            Thread.sleep(crawlDelay * 1000);
+                    // check crawl delay
+                    if (master.crawlTimes.containsKey(normalizedInfo.getHostName())) {
+                        long lastCrawledAt = master.crawlTimes.get(normalizedInfo.getHostName());
+                        if ((new Date().getTime() - lastCrawledAt) < crawlDelay * 1000) {
+                            log.info("Experiencing crawl delay... ");
+                            try {
+                                Thread.sleep(crawlDelay * 1000);
+                            } catch (InterruptedException e) {
+                                log.error("Interrupted while waiting for crawl delay to finish " + e.getMessage());
+                                continue;
+                            }
                         }
-                    } catch (InterruptedException e) {
-                        log.error("Delay between HEAD and GET for page was interrupted... going to next page");
-                        continue;
                     }
 
-                    // we can now send our GET, phew
-                    if (client.execute("GET",
+                    HttpClient client = new HttpClient();
+                    Date dateLastAccessed = null;
+                    //TODO fix this
+    //                Document doc = db.retrieveDocument(url);
+    //                if (doc != null) {
+    //                    log.info(url + " was found in the database");
+    //                    dateLastAccessed = doc.getLastAccessedTime();
+    //                }
+                    if (client.execute("HEAD",
                             isSecure,
                             normalizedInfo.getFilePath(),
                             url,
                             normalizedInfo.getPortNo(),
                             normalizedInfo.getHostName(),
                             dateLastAccessed)) {
-                        if (isCrawlableFile(contentType)) {
-                            Date now = new Date();
-                            String docType = documentType(contentType);
-                            String body = client.getProperty(HttpClient.RESPONSE_BODY);
-                            master.crawlTimes.put(normalizedInfo.getHostName(), now.getTime());
-                            // TODO store stuff here later
-//                            db.storeDocument(url, body, now, contentType);
-                            msgr.message(this.id, "Downloading: " + url);
-                            master.increaseProcessedDocCount();
-//                            log.info(url + ": Downloading");
-                            if (docType.equals(HttpClient.HTML)) {
-                                extractLinks(body, url);
-                            }
-
+                        String statusCode = client.getProperty(HttpClient.RESPONSE_STATUS_CODE);
+                        if (statusCode.equals("304")) {
+                            log.info(url + ": Not modified");
+                            continue;
                         }
+
+                        // check redirected
+                        String redirectedTo = client.getProperty(HttpClient.LOCATION);
+                        if (redirectedTo != null) {
+                            log.info("Redirecting " + url + " to " + redirectedTo);
+                            if (redirectedTo.startsWith("http")) {
+                                // absolute url
+                                try {
+                                    this.frontier.enqueue(redirectedTo + IS_WWW_REQUIRED);
+                                } catch (IOException e) {
+                                    log.error("Error in enqueuing a url " + e.getMessage());
+                                }
+                            } else {
+                                try {
+                                    URL base = new URL(url);
+                                    String absolute = new URL(base, redirectedTo).toString();
+                                    try {
+                                        this.frontier.enqueue(absolute + IS_WWW_REQUIRED);
+                                    } catch (IOException e) {
+                                        log.error("Error in enqueuing a url " + e.getMessage());
+                                    }
+                                } catch (MalformedURLException e) {
+                                    log.error("Could not create redirect url. Continuing... ");
+                                }
+                            }
+                            continue;
+                        }
+
+                        String contentType = client.getProperty(HttpClient.CONTENT_TYPE);
+                        String contentLength = client.getProperty(HttpClient.CONTENT_LENGTH);
+                        if (contentLength == null) {
+                            contentLength = "0";
+                        }
+                        log.info(url + " has content type " + contentType + " and content length of " + contentLength + " bytes");
+                        if (contentType == null || !isCrawlableFile(contentType)) {
+                            log.info(normalizedInfo.getFilePath() + " is not the correct MIME type to crawl. Continuing...");
+                            continue;
+                        }
+
+
+                        try {
+                            // TODO refactor into switching to other tasks from the queue instead of sleep
+                            if (crawlDelay > 0) {
+                                log.info("Waiting out crawl delay between HEAD and GET of " + normalizedInfo.getHostName());
+                                Thread.sleep(crawlDelay * 1000);
+                            }
+                        } catch (InterruptedException e) {
+                            log.error("Delay between HEAD and GET for page was interrupted... going to next page");
+                            continue;
+                        }
+
+                        // we can now send our GET, phew
+                        if (client.execute("GET",
+                                isSecure,
+                                normalizedInfo.getFilePath(),
+                                url,
+                                normalizedInfo.getPortNo(),
+                                normalizedInfo.getHostName(),
+                                dateLastAccessed)) {
+                            if (isCrawlableFile(contentType)) {
+                                Date now = new Date();
+                                String docType = documentType(contentType);
+                                String body = client.getProperty(HttpClient.RESPONSE_BODY);
+                                master.crawlTimes.put(normalizedInfo.getHostName(), now.getTime());
+                                // TODO store stuff here later
+                                // TODO save thread id + hash in metadata (S3Wrapper)
+                                // important bc frontiers siloed by worker
+    //                            db.storeDocument(url, body, now, contentType);
+                                msgr.message(this.id, "Downloading: " + url);
+                                master.increaseProcessedDocCount();
+    //                            log.info(url + ": Downloading");
+                                if (docType.equals(HttpClient.HTML)) {
+                                    extractLinks(body, url);
+                                }
+
+                            }
+                        }
+                    } else {
+                        log.info("HEAD req to " + url + " was not successful. Continuing...");
                     }
-                } else {
-                    log.info("HEAD req to " + url + " was not successful. Continuing...");
                 }
             }
+        } catch (IOException e) {
+            log.error("Could not reach remote queue... terminating thread");
         }
         master.terminateThread(this.id); // thread finished once we are here
     }
