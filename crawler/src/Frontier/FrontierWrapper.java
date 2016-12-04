@@ -18,7 +18,7 @@ public class FrontierWrapper implements Frontier {
 
     private static String threadID = "";
 
-    // Provide
+    // Provide threadID
     public void init(String threadID) {
         this.threadID = threadID;
     }

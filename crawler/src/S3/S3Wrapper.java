@@ -59,6 +59,10 @@ public class S3Wrapper {
         addDocument(key, content, null);
     }
 
+    public static boolean hasKey(String key) {
+        return s3.doesObjectExist(bucketName, key);
+    }
+
     public static void addDocument(String key, String content, Map<String, String> metaData) {
         System.out.println("Uploading a new object to S3 from a file\n");
         try {
