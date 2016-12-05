@@ -27,7 +27,7 @@ public class FrontierServer {
                 }
 
                 String threadID = request.params("threadID");
-
+                System.out.println("CALLED /" + threadID + "/poll");
                 return SyncMultQueue.poll(threadID);
             }
         });

@@ -31,10 +31,10 @@ public class HttpClient {
     public static final String CONTENT_LENGTH = "content-length";
     static final String CONNECTION = "connection";
     static final String CONN_TYPE = "close";
-    public static final String RESPONSE_STATUS_CODE = "response-code";
-    public static final String RESPONSE_BODY = "response-body";
+    public final String RESPONSE_STATUS_CODE = "response-code";
+    public final String RESPONSE_BODY = "response-body";
     static final String IF_MOD = "if-modified-since";
-    public static final String LOCATION = "location";
+    public final String LOCATION = "location";
     public static final String HOST = "host";
     public static final String HTML = "HTML";
     public static final String XML = "XML";
@@ -129,17 +129,23 @@ public class HttpClient {
             responseHeaders = new HashMap<String, ArrayList<String>>();
         }
 
-        public boolean parseResponse() {
+        public boolean parseResponse(String url) {
             // response line
             try {
                 if (noRobotsTxtFileExists || couldNotOpenConnection) {
                     return false;
                 }
+
                 String line = input.readLine().toLowerCase();
                 String[] responseLine = line.split("\\s+", 3);
+
+                log.info("URL = "+url+" and response line is " + line);
+
                 if (responseLine.length != 3) {
+                    log.info("response line length " + responseLine.length);
                     return false;
                 }
+
                 String status = responseLine[1];
                 setProperty(RESPONSE_STATUS_CODE, status);
                 String prevHeader = "";
@@ -159,7 +165,7 @@ public class HttpClient {
                 }
                 setProperty(CONTENT_TYPE, getResponseHeader(CONTENT_TYPE));
                 setProperty(CONTENT_LENGTH, getResponseHeader(CONTENT_LENGTH));
-                if (status.equals("404")) {
+                if (status.startsWith("4") || status.startsWith("5")) {
                     return false;
                 }
                 if (status.equals("301") || status.equals("302") || status.equals("303")) {
@@ -221,6 +227,7 @@ public class HttpClient {
 
     public boolean execute(String method, boolean isSecure, String path, String url, int port, String host, Date ifModifiedSince) {
         reset(); // clear old headers, properties, etc.
+        log.info("URL is "+url+" and Status code is " + properties.get(RESPONSE_STATUS_CODE));
         setProperty(REQUEST_METHOD, method);
         URL httpsUrl;
         HttpsURLConnection connection = null;
@@ -293,8 +300,10 @@ public class HttpClient {
                 }
             }
         }
+
         httpSender.sendRequest(method, path, url, host, port, ifModifiedSince);
-        boolean success = httpReceiver.parseResponse();
+
+        boolean success = httpReceiver.parseResponse(host);
         closeResources();
         return success;
     }

@@ -197,6 +197,16 @@ public class Master {
     }
 
     /**
+     * Remove a seen url from the queue
+     * @param url url that has been seen
+     */
+    public void removeFromSeenURLs(String url) {
+        synchronized (visitedUrls) {
+            this.visitedUrls.remove(url);
+        }
+    }
+
+    /**
      * Get the current number of documents processed
      * @return number of documents that have been processed and downloaded
      */

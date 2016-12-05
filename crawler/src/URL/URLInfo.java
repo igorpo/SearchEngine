@@ -12,6 +12,7 @@ public class URLInfo {
     private String hostName;
     private int portNo;
     private String filePath;
+    private boolean wasRedirected = false;
 
     /**
      * Constructor called with raw URL as input - parses URL to obtain host name and file path
@@ -31,8 +32,10 @@ public class URLInfo {
         // If starting with 'www.' , stripping that off too
         if(docURL.startsWith("www.") && !docURL.endsWith(IS_WWW_REQUIRED))
             docURL = docURL.substring(4);
-        else if (docURL.endsWith(IS_WWW_REQUIRED))
+        else if (docURL.endsWith(IS_WWW_REQUIRED)) {
             docURL = docURL.replace(IS_WWW_REQUIRED, "");
+            wasRedirected = true;
+        }
         int i = 0;
         while(i < docURL.length()){
             char c = docURL.charAt(i);
@@ -49,7 +52,8 @@ public class URLInfo {
             return;
         if(address.indexOf(':') != -1){
             String[] comp = address.split(":",2);
-            hostName = comp[0].trim();
+            if (wasRedirected) hostName = "www." + comp[0].trim();
+            else hostName = comp[0].trim();
             try{
                 portNo = Integer.parseInt(comp[1].trim());
             }catch(NumberFormatException nfe){
@@ -57,7 +61,8 @@ public class URLInfo {
                 else portNo = 80;
             }
         }else{
-            hostName = address;
+            if (wasRedirected) hostName = "www." + address;
+            else hostName = address;
             if (isSecure) portNo = 443;
             else portNo = 80;
         }

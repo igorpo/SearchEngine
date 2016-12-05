@@ -4,6 +4,7 @@ import Crawler.Messenger;
 import Frontier.*;
 import HttpClient.HttpClient;
 import Robots.*;
+import S3.S3Wrapper;
 import URL.URLInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,6 +19,8 @@ import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -86,10 +89,10 @@ public class Worker extends Thread {
 //        frontier.enqueue("http://www.nytimes.com");
         switch (getID()) {
             case "0":
-                frontier.enqueue("http://kieraj.com");
+                frontier.enqueue("http://www.wsj.com");
                 break;
             case "1":
-                frontier.enqueue("http://www.wsj.com");
+                frontier.enqueue("http://www.nytimes.com");
                 break;
             case "2":
                 frontier.enqueue("http://www.cnn.com");
@@ -116,7 +119,7 @@ public class Worker extends Thread {
     public void run() {
 
         try {
-            while (master.getCurrentNumDocumentsProcessed() != master.getMaxDocuments()) {
+            while (master.getCurrentNumDocumentsProcessed() <= master.getMaxDocuments()) {
                 log.info("Running workerID " + this.getID());
                 // Should I sleep, or keep going
                 if (this.frontier.isEmpty()) {
@@ -139,13 +142,22 @@ public class Worker extends Thread {
                 // Keep going
                 String url = null;
                 try {
-                    url = normalize(this.frontier.poll());
+                    String url_not_normalized = this.frontier.poll();
+                    url = normalize(url_not_normalized);
+
+                    log.info("Polled and got URL " + url_not_normalized + " normalized to " + url);
                 } catch (IOException e) {
                     log.error("Error with polling the queue... Continuing");
                     continue;
                 }
+
+                if (master.haveSeenUrl(url)/* || url.equals(BAD)*/) {
+                    log.error("URL " + url + " was seen");
+                }
+
                 if (!master.haveSeenUrl(url) && !url.equals(BAD)) {
-                    master.addSeenUrl(url);
+
+//                    master.addSeenUrl(url);
                     boolean isSecure = url.contains("https://");
                     log.info("\n\nFetching information for URL: " + url);
                     URLInfo normalizedInfo = new URLInfo(url);
@@ -217,20 +229,24 @@ public class Worker extends Thread {
                             normalizedInfo.getPortNo(),
                             normalizedInfo.getHostName(),
                             dateLastAccessed)) {
-                        String statusCode = client.getProperty(HttpClient.RESPONSE_STATUS_CODE);
+
+                        String statusCode = client.getProperty(client.RESPONSE_STATUS_CODE);
+
                         if (statusCode.equals("304")) {
                             log.info(url + ": Not modified");
                             continue;
                         }
 
                         // check redirected
-                        String redirectedTo = client.getProperty(HttpClient.LOCATION);
+                        String redirectedTo = client.getProperty(client.LOCATION);
+
                         if (redirectedTo != null) {
-                            log.info("Redirecting " + url + " to " + redirectedTo);
+                            log.info("Redirecting " + url + " to " + redirectedTo + " bc statusCode was " + statusCode);
                             if (redirectedTo.startsWith("http")) {
                                 // absolute url
                                 try {
                                     this.frontier.enqueue(redirectedTo + IS_WWW_REQUIRED);
+//                                    this.master.removeFromSeenURLs(normalize(redirectedTo));
                                 } catch (IOException e) {
                                     log.error("Error in enqueuing a url " + e.getMessage());
                                 }
@@ -240,6 +256,7 @@ public class Worker extends Thread {
                                     String absolute = new URL(base, redirectedTo).toString();
                                     try {
                                         this.frontier.enqueue(absolute + IS_WWW_REQUIRED);
+//                                        this.master.removeFromSeenURLs(normalize(absolute));
                                     } catch (IOException e) {
                                         log.error("Error in enqueuing a url " + e.getMessage());
                                     }
@@ -281,15 +298,25 @@ public class Worker extends Thread {
                                 normalizedInfo.getPortNo(),
                                 normalizedInfo.getHostName(),
                                 dateLastAccessed)) {
+                            this.master.addSeenUrl(url);
                             if (isCrawlableFile(contentType)) {
+                                log.info("URL " + url + " is crawlable file");
                                 Date now = new Date();
                                 String docType = documentType(contentType);
-                                String body = client.getProperty(HttpClient.RESPONSE_BODY);
+                                String body = client.getProperty(client.RESPONSE_BODY);
                                 master.crawlTimes.put(normalizedInfo.getHostName(), now.getTime());
                                 // TODO store stuff here later
                                 // TODO save thread id + hash in metadata (S3Wrapper)
                                 // important bc frontiers siloed by worker
     //                            db.storeDocument(url, body, now, contentType);
+                                Map<String, String> metadata = new HashMap<>();
+
+                                metadata.put("threadID", getID());
+                                metadata.put("now", String.valueOf(now));
+                                metadata.put("contentType", contentType);
+                                metadata.put("url", url);
+
+                                S3Wrapper.addDocument(url, body, metadata);
 
                                 if (msgr ==  null)
                                     log.error("MSGR IS NULL");

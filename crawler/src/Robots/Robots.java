@@ -38,7 +38,7 @@ public class Robots {
         robotsurl.append("/robots.txt");
         if (client.execute("GET", isSecure, "/robots.txt", robotsurl.toString(), urlInfo.getPortNo(), urlInfo.getHostName(), null)) {
             log.info("Found robots.txt file of " + urlInfo.getHostName());
-            String robotsdottxt = client.getProperty(HttpClient.RESPONSE_BODY);
+            String robotsdottxt = client.getProperty(client.RESPONSE_BODY);
             parse(robots, robotsdottxt);
         } else {
             log.info("Could not find robots.txt file of " + urlInfo.getHostName());
