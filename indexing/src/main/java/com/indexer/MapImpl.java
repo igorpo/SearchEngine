@@ -90,7 +90,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         System.err.println("URL: " + url + ",document: " + document);
 
-        String[] words = document.toLowerCase().split("[^\\p{Alnum}]+");
+        String[] words = document.toLowerCase().split("[^\\p{Alnum}']+");
 
 
         Map<String, Integer> tfs = new HashMap<>();
