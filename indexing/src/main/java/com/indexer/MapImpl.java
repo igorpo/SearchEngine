@@ -16,7 +16,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static com.indexer.IndexerJob.bucketName;
 
@@ -28,9 +30,9 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
     private final static IntWritable one = new IntWritable(1);
     private Text word = new Text();
     private Text textUrl = new Text();
-    private
-
-    AmazonS3 s3;
+    private AmazonS3 s3;
+    private String stopList = "stopList.txt";
+    private Set<String> stopWords;
 
     @Override
     public void configure(JobConf job){
@@ -38,6 +40,25 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
         Region reg = Region.getRegion(Regions.US_EAST_1);
         s3.setRegion(reg);
 
+        // Stop list setup
+        S3Object stopDoc = s3.getObject(new GetObjectRequest(bucketName, stopList));
+        if (stopDoc == null){
+//            System.err.println("Could not get stop word file: " + stopList);
+            return;
+        }
+        BufferedReader stopReader = new BufferedReader(new
+                InputStreamReader(stopDoc.getObjectContent()));
+
+        String stopLine;
+        Set<String> stopWords = new HashSet<>();
+        try {
+            while ((stopLine = stopReader.readLine()) != null) {
+                stopWords.add(stopLine);
+            }
+        } catch(IOException e) {
+            System.err.println("IOException: Could not read stop word file: " + stopList);
+        }
+        // end of stop list setup
     }
 
     @Override
@@ -57,7 +78,6 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         BufferedReader reader = new BufferedReader(new
                 InputStreamReader(urlDoc.getObjectContent()));
-
 
         String line;
         StringBuilder sb = new StringBuilder();
@@ -95,13 +115,14 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         double tf;
         for (String w : words){
+            if(!stopWords.contains(w)) {
+                word.set(w);
+                textUrl.set(url);
 
-            word.set(w);
-            textUrl.set(url);
-
-            tf = .5 + .5 * (double)tfs.get(w)/(double)max;
-            textUrl.set(new Double(tf).toString()+","+url);
-            output.collect(word, textUrl);
+                tf = .5 + .5 * (double) tfs.get(w) / (double) max;
+                textUrl.set(new Double(tf).toString() + "," + url);
+                output.collect(word, textUrl);
+            }
         }
 
 
