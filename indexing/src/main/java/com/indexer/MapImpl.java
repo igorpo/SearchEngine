@@ -51,9 +51,14 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         String stopLine;
         Set<String> stopWords = new HashSet<>();
+        Stemmer stemmer = new Stemmer();
+        String stemmedWord;
         try {
             while ((stopLine = stopReader.readLine()) != null) {
-                stopWords.add(stopLine);
+                stemmer.add(stopLine.toCharArray(), stopLine.length());
+                stemmer.stem();
+                stemmedWord = stemmer.toString();
+                stopWords.add(stemmedWord);
             }
         } catch(IOException e) {
             System.err.println("IOException: Could not read stop word file: " + stopList);
@@ -92,14 +97,18 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         String[] words = document.toLowerCase().split("[^\\p{Alnum}']+");
 
-
+        Stemmer stemmer = new Stemmer();
+        //TODO: If running too slow, might want to get rid of stemming or extract to another for loop to stem only once
         Map<String, Integer> tfs = new HashMap<>();
-
+        String stemmedWord;
         for (String w : words){
-            if (tfs.containsKey(w)){
-                tfs.put(w, tfs.get(w) + 1);
+            stemmer.add(w.toCharArray(), w.length());
+            stemmer.stem();
+            stemmedWord = stemmer.toString();
+            if (tfs.containsKey(stemmedWord)){
+                tfs.put(stemmedWord, tfs.get(stemmedWord) + 1);
             } else {
-                tfs.put(w, 1);
+                tfs.put(stemmedWord, 1);
             }
         }
 
@@ -114,7 +123,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
 
         double tf;
-        for (String w : words){
+        for (String w : tfs.keySet()){
             if(!stopWords.contains(w)) {
                 word.set(w);
                 textUrl.set(url);
