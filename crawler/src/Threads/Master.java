@@ -1,9 +1,10 @@
 package threads;
 
-import Crawler.Messenger;
+import crawler.Messenger;
+import databases.DynamoWrapper;
 import frontier.Frontier;
 import robots.RobotsTxtInfo;
-import S3.S3Wrapper;
+import databases.S3Wrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -72,6 +73,11 @@ public class Master {
     static final String BUCKET_NAME = "cis-455";
 
     /**
+     * Dynamo table name for {url -> [outgoing link list]}
+     */
+    static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+
+    /**
      * The Master class controls the extended specified thread class
      * that will be provided.
      * @param maxThreads Max number of threads to be run for this job
@@ -87,6 +93,7 @@ public class Master {
         crawlTimes = new ConcurrentHashMap<>();
         visitedUrls = new HashSet<>();
         S3Wrapper.init(BUCKET_NAME);
+        DynamoWrapper.init(DYNAMO_DB_NAME);
         try {
             initThreads();
         } catch (Exception e) {
@@ -103,7 +110,6 @@ public class Master {
         for (int i = 0; i < getMaxThreads(); i++) {
             try {
                 Worker workerThread = new Worker();
-//                String id = increaseThreadCount();
                 String id = String.valueOf(i);
                 log.info("THREAD WITH ID " + id + " CREATED");
                 workerThread.initWorkerEssentials(id, this, this.msgr);
@@ -124,22 +130,6 @@ public class Master {
         // send the messenger (crawler) the termination request in case we want to do something else
         this.msgr.terminate(threadID);
 
-        // if we hit our mark, we just want to end
-//        if (achievedLimit()) {
-//            TODO potentially need list/map to terminate remaining threads
-//            for (int i = 0; i < getCurrentNumThreads(); i++) {
-//
-//            }
-//            this.msgr.complete();
-//            return;
-//        }
-//
-//        try {
-//            // try to init more threads to make up for potentially dead ones
-//            initThreads();
-//        } catch (Exception e) {
-//            log.error("Could not init more threads, moving on: " + e.getMessage());
-//        }
     }
 
     /**

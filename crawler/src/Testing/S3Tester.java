@@ -1,6 +1,6 @@
 package testing;
 
-import S3.S3Wrapper;
+import databases.S3Wrapper;
 
 import java.io.IOException;
 import java.util.HashMap;

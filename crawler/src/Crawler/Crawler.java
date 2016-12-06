@@ -1,4 +1,4 @@
-package Crawler;
+package crawler;
 
 import threads.Master;
 import org.apache.commons.logging.Log;

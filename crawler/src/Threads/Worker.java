@@ -1,12 +1,12 @@
 package threads;
 
-import Crawler.Messenger;
+import crawler.Messenger;
 import frontier.*;
 import httpClient.HttpClient;
 import remote.frontierServer.SyncMultQueue;
 import robots.*;
-import S3.S3Wrapper;
-import URL.URLInfo;
+import databases.S3Wrapper;
+import url.URLInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
@@ -157,7 +157,7 @@ public class Worker extends Thread {
                 }
 
                 if (master.haveSeenUrl(url)/* || url.equals(BAD)*/) {
-                    log.error("URL " + url + " was seen");
+                    log.error("url " + url + " was seen");
                 }
 
                 if (!master.haveSeenUrl(url) && !url.equals(BAD)) {
@@ -305,7 +305,7 @@ public class Worker extends Thread {
                                 dateLastAccessed)) {
                             this.master.addSeenUrl(url);
                             if (isCrawlableFile(contentType)) {
-                                log.info("URL " + url + " is crawlable file");
+                                log.info("url " + url + " is crawlable file");
                                 Date now = new Date();
                                 String docType = documentType(contentType);
                                 String body = client.getProperty(client.RESPONSE_BODY);

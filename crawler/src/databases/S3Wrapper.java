@@ -1,4 +1,4 @@
-package S3;
+package databases;
 /**
  * Created by YagilB on 29/11/2016.
  */
@@ -67,7 +67,7 @@ public class S3Wrapper {
         System.out.println("Uploading a new object to S3 from a file\n");
         try {
 
-            String safeKey = new Base32().encodeAsString(key.getBytes());
+            String safeKey = encodeSafeKey(key);
 
             // Adding user meta data
 
@@ -113,8 +113,12 @@ public class S3Wrapper {
 
     }
 
+    public static String encodeSafeKey(String arg0) {
+        return new Base32().encodeAsString(arg0.getBytes());
+    }
+
     public static InputStream getDocument(String key) {
-        String safeKey = new Base32().encodeAsString(key.getBytes());
+        String safeKey = encodeSafeKey(key);
 
         System.out.println("Downloading an object");
 

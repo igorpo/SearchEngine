@@ -1,4 +1,4 @@
-package Crawler;
+package crawler;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
