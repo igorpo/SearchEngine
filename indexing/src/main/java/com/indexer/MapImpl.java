@@ -24,6 +24,7 @@ import static com.indexer.IndexerJob.bucketName;
 
 /**
  * Created by azw on 11/30/16.
+ * index + ifidf mapper
  */
 public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 
