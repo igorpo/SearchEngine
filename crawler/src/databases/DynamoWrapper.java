@@ -96,6 +96,18 @@ public class DynamoWrapper {
     }
 
     /**
+     * Tests if a given url has been visited before
+     * @param url url to check
+     * @return true if visited, false if not
+     */
+    public static boolean urlHasBeenSeen(String url) {
+        String safeKey = S3Wrapper.encodeSafeKey(url);
+        Table t = dynamoDB.getTable(table);
+        Item item = t.getItem("url", safeKey);
+        return item != null;
+    }
+
+    /**
      * Get the outgoing links list from a url
      * @param url url to get
      * @return the links list. will be empty if nothing was found in the db call
@@ -111,4 +123,5 @@ public class DynamoWrapper {
         }
         return results;
     }
+    
 }
