@@ -15,6 +15,7 @@ import java.util.List;
 
 /**
  * Created by azw on 11/30/16.
+ * index + ifidf reducer
  */
 public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
