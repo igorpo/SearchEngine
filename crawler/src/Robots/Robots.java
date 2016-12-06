@@ -1,6 +1,6 @@
-package Robots;
+package robots;
 
-import HttpClient.HttpClient;
+import httpClient.HttpClient;
 import URL.URLInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

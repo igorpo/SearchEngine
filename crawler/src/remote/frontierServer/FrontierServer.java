@@ -1,4 +1,4 @@
-package Remote;
+package remote.frontierServer;
 
 import spark.Request;
 import spark.Response;

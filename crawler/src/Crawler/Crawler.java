@@ -1,7 +1,6 @@
 package Crawler;
 
-import Threads.Master;
-import Frontier.Frontier;
+import threads.Master;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

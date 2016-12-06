@@ -1,4 +1,4 @@
-package Robots;
+package robots;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.

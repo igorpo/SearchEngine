@@ -1,6 +1,6 @@
-package Testing;
+package testing;
 
-import Frontier.Frontier;
+import frontier.Frontier;
 
 import java.util.LinkedList;
 import java.util.Queue;

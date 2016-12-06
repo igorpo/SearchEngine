@@ -1,4 +1,4 @@
-package Frontier;
+package frontier;
 
 import java.io.*;
 import java.net.HttpURLConnection;

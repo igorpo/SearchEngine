@@ -1,4 +1,4 @@
-package Remote;
+package remote.frontierServer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,8 @@ import java.util.concurrent.BlockingQueue;
  */
 public class SyncMultQueue {
 
-    private static final int QUEUE_SIZE = 1000;
+    public static final int MAX_QUEUE_SIZE = (int) Math.pow(2,20);
+    private static final int QUEUE_SIZE = MAX_QUEUE_SIZE;// Integer.MAX_VALUE;
     private static final Map<String, BlockingQueue<String>> subqueues = new HashMap<>();
 
     public static String poll(String threadID) {

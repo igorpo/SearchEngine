@@ -1,4 +1,4 @@
-package HttpClient;
+package httpClient;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.

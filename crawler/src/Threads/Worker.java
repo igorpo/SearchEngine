@@ -1,9 +1,10 @@
-package Threads;
+package threads;
 
 import Crawler.Messenger;
-import Frontier.*;
-import HttpClient.HttpClient;
-import Robots.*;
+import frontier.*;
+import httpClient.HttpClient;
+import remote.frontierServer.SyncMultQueue;
+import robots.*;
 import S3.S3Wrapper;
 import URL.URLInfo;
 import org.apache.commons.logging.Log;
@@ -119,8 +120,12 @@ public class Worker extends Thread {
     public void run() {
 
         try {
-            while (master.getCurrentNumDocumentsProcessed() <= master.getMaxDocuments()) {
-                log.info("Running workerID " + this.getID());
+            // TODO: != or <=
+            int docsSoFar;
+            while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) != master.getMaxDocuments()) {
+                if (docsSoFar % 100 == 0)
+                    log.info("Number of documents processed so far: " + docsSoFar);
+
                 // Should I sleep, or keep going
                 if (this.frontier.isEmpty()) {
                     int trials = 0;
@@ -309,6 +314,7 @@ public class Worker extends Thread {
                                 // TODO save thread id + hash in metadata (S3Wrapper)
                                 // important bc frontiers siloed by worker
     //                            db.storeDocument(url, body, now, contentType);
+
                                 Map<String, String> metadata = new HashMap<>();
 
                                 metadata.put("threadID", getID());
@@ -326,9 +332,12 @@ public class Worker extends Thread {
     //                            log.info(url + ": Downloading");
                                 if (docType.equals(HttpClient.HTML)) {
                                     log.info("EXTRACTING LINKS FOR URL == " + url);
-                                    extractLinks(body, url);
+                                    try {
+                                        extractLinks(body, url);
+                                    } catch (IOException e) {
+                                        log.error("Worker: Error with enqueuing a link " + e.getMessage());
+                                    }
                                 }
-
                             }
                         }
                     } else {
@@ -429,7 +438,7 @@ public class Worker extends Thread {
      * @param html html to extract from
      * @param url url to create path from
      */
-    private void extractLinks(String html, String url) {
+    private void extractLinks(String html, String url) throws IOException {
         InputStream htmlStream = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
         Tidy tidy = new Tidy();
         tidy.setShowWarnings(false);
@@ -437,6 +446,11 @@ public class Worker extends Thread {
         tidy.setQuiet(true);
         org.w3c.dom.Document doc = tidy.parseDOM(htmlStream, null);
         NodeList anchors = doc.getElementsByTagName("a");
+
+        if (this.frontier.size() == SyncMultQueue.MAX_QUEUE_SIZE) {
+            throw new IOException("Worker id: "+ this.getID() +" Queue is full. Not saving links from URL = " + url);
+        }
+
         for (int i = 0; i < anchors.getLength(); i++) {
             org.w3c.dom.Node n = anchors.item(i);
             if (n.getAttributes() == null || n.getAttributes().getNamedItem("href") == null) {
@@ -444,14 +458,9 @@ public class Worker extends Thread {
             }
             String link = n.getAttributes().getNamedItem("href").getNodeValue();
             if (link.startsWith("http")) {
-                try {
-                    // absolute link
-                    this.frontier.enqueue(link);
-                    log.info("Adding to queue: " + link);
-                } catch (IOException e) {
-                    log.error("Error with enqueuing a link " + e.getMessage());
-                }
-
+                // absolute link
+                this.frontier.enqueue(link);
+                log.info("Adding to queue: " + link);
             } else {
                 try {
                     URL base = new URL(url);
@@ -460,8 +469,6 @@ public class Worker extends Thread {
                     this.frontier.enqueue(absolute);
                 } catch (MalformedURLException e) {
                     log.error("Error turning a relative url into an absolute url");
-                } catch (IOException e) {
-                    log.error("Error with enqueueing a link " + e.getMessage());
                 }
             }
         }

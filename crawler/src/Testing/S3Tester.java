@@ -1,4 +1,4 @@
-package Testing;
+package testing;
 
 import S3.S3Wrapper;
 

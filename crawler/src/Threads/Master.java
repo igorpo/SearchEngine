@@ -1,8 +1,8 @@
-package Threads;
+package threads;
 
 import Crawler.Messenger;
-import Frontier.Frontier;
-import Robots.RobotsTxtInfo;
+import frontier.Frontier;
+import robots.RobotsTxtInfo;
 import S3.S3Wrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
