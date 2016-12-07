@@ -123,5 +123,5 @@ public class DynamoWrapper {
         }
         return results;
     }
-    
+
 }
