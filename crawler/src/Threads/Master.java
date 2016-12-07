@@ -20,7 +20,7 @@ public class Master {
     private static final Log log = LogFactory.getLog(Master.class);
 
     /**
-     * MAX number of parallel threads per Crawler.Crawler
+     * MAX number of parallel threads per crawler
      */
     private int maxThreads;
 
