@@ -1,27 +1,28 @@
 package threads;
 
 import crawler.Messenger;
-import frontier.*;
-import httpClient.HttpClient;
-import remote.frontierServer.SyncMultQueue;
-import robots.*;
+import databases.DynamoWrapper;
 import databases.S3Wrapper;
-import url.URLInfo;
+import frontier.Frontier;
+import frontier.FrontierWrapper;
+import httpClient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
+import remote.frontierServer.SyncMultQueue;
+import robots.Robots;
+import robots.RobotsTxtInfo;
+import url.URLInfo;
 
-import java.net.URL;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -122,7 +123,7 @@ public class Worker extends Thread {
         try {
             // TODO: != or <=
             int docsSoFar;
-            while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) != master.getMaxDocuments()) {
+            while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) <= master.getMaxDocuments()) {
                 if (docsSoFar % 100 == 0)
                     log.info("Number of documents processed so far: " + docsSoFar);
 
@@ -450,27 +451,39 @@ public class Worker extends Thread {
         if (this.frontier.size() == SyncMultQueue.MAX_QUEUE_SIZE) {
             throw new IOException("Worker id: "+ this.getID() +" Queue is full. Not saving links from URL = " + url);
         }
-
+        Set<String> outgoingLinks = new HashSet<>();
         for (int i = 0; i < anchors.getLength(); i++) {
             org.w3c.dom.Node n = anchors.item(i);
             if (n.getAttributes() == null || n.getAttributes().getNamedItem("href") == null) {
                 continue;
             }
+
             String link = n.getAttributes().getNamedItem("href").getNodeValue();
             if (link.startsWith("http")) {
                 // absolute link
-                this.frontier.enqueue(link);
+                handleLink(outgoingLinks, link);
+
                 log.info("Adding to queue: " + link);
             } else {
                 try {
                     URL base = new URL(url);
                     String absolute = new URL(base, link).toString();
                     log.info("Adding to queue: " + absolute);
-                    this.frontier.enqueue(absolute);
+
+                    handleLink(outgoingLinks, absolute);
                 } catch (MalformedURLException e) {
                     log.error("Error turning a relative url into an absolute url");
                 }
             }
         }
+
+        // Save outgoing links to Dynamo
+        DynamoWrapper.storeURLOutgoingLinks(url, outgoingLinks.stream().collect(Collectors.toList()));
+
+    }
+
+    private void handleLink(Set<String> outgoingLinks, String url) throws IOException {
+        this.frontier.enqueue(url);
+        outgoingLinks.add(url);
     }
 }

@@ -1,13 +1,8 @@
 package databases;
 
-import java.io.File;
-import java.util.*;
-
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -15,10 +10,11 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.model.*;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient;
-import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
-import com.amazonaws.services.securitytoken.model.AssumeRoleResult;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
+import com.amazonaws.services.dynamodbv2.model.PutItemResult;
+
+import java.util.*;
 
 /**
  * Created by igorpogorelskiy on 12/6/16.
@@ -71,7 +67,10 @@ public class DynamoWrapper {
             String safeKey = S3Wrapper.encodeSafeKey(url);
             newEntry.put("url", new AttributeValue(safeKey));
             newEntry.put("url_unsafe", new AttributeValue(url));
-            newEntry.put("outgoingLinks", new AttributeValue().withSS(links));
+
+            if (!links.isEmpty())
+                newEntry.put("outgoingLinks", new AttributeValue().withSS(links));
+
             PutItemRequest putItemRequest = new PutItemRequest(table, newEntry);
             PutItemResult putItemResult = dynamoClient.putItem(putItemRequest);
             System.out.println("Item added to DynamoDB: " + url + ", encoded to: `" + safeKey + "` | " + putItemResult);
