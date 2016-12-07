@@ -1,0 +1,112 @@
+<?xml version="1.0"?>
+
+<project name="HW2" default="build" basedir=".">
+    <property name="shared.root" location="${basedir}"/>
+    <property name="file.separator" location="/"/>
+    <property name="project.root" location="${basedir}"/>
+    <property name="build.dir" location="${project.root}"/>
+    <property name="build.target.dir" location="${project.root}${file.separator}target"/>
+    <property name="web-inf.dir" location="${build.target.dir}${file.separator}WEB-INF"/>
+    <property name="classes.dir"     location="${web-inf.dir}${file.separator}classes"/>
+    <property name="web-inf.lib.dir" location="${web-inf.dir}${file.separator}lib"/>
+    <property name="test-classes.dir" location="${build.target.dir}${file.separator}test${file.separator}classes"/>
+    <property name="test-lib.dir"     location="${build.target.dir}${file.separator}test${file.separator}lib"/>
+    <property name="src.main.dir"  location="${build.dir}${file.separator}src${file.separator}"/>
+    <property name="inputlib.dir"  location="${shared.root}${file.separator}lib"/>
+    <property name="third.dir"  location="${shared.root}${file.separator}third-party"/>
+    <property name="src.test.dir"  location="${build.dir}${file.separator}src${file.separator}test"/>
+    <property name="resources.dir" location="${build.dir}${file.separator}resources"/>
+    <property name="conf.dir"      location="${build.dir}${file.separator}conf"/>
+
+    <property name="jetty.dir"      location="jetty"/>
+
+    
+    <target name="compile-servlet" depends="" description="Compiles the servlet">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="src/edu/upenn/cis455/" destdir="${classes.dir}" debug="on" deprecation="off" optimize="on" includeAntRuntime="no">
+            <classpath>
+
+                <fileset dir="${inputlib.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+                <fileset dir="${third.dir}">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <pathelement path="${inputlib.dir}"/>
+                <pathelement path="${third.dir}"/>
+            </classpath>
+        </javac>
+    </target>
+  
+    <target name="clean" description="Deletes all the compiled files">
+        <delete dir="${build.target.dir}"/>
+        <delete file="crawler.jar"/>
+        <delete file="servlet.war"/>
+        <delete file="submit-hw2.zip"/>
+    </target>
+
+    <path id="build-classpath">
+        <!--
+        <fileset dir="${inputlib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${third.dir}">
+            <include name="**/*.jar"/>
+        </fileset> -->
+        <pathelement path="${inputlib.dir}"/>
+        <pathelement path="${third.dir}"/>
+    </path>
+    <manifestclasspath property="lib.list" jarfile="servlet.war">
+        <classpath refid="build-classpath"/>
+    </manifestclasspath>
+
+    <path id="build.path">
+        <pathelement path="${inputlib.dir}"/>
+        <pathelement path="${third.dir}"/>
+    </path>
+
+    <target name="servlet-war" depends="compile-servlet" description="Makes the WAR file for the servlet">
+        <delete file="servlet.war"/>
+        <copy file="${conf.dir}${file.separator}web.xml" tofile="${web-inf.dir}${file.separator}web.xml" overwrite="true" />
+        <copy todir="${web-inf.lib.dir}" overwrite="true">
+            <fileset dir="${inputlib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <jar destfile="servlet.war" update="true">
+            <fileset dir="target">
+                <include name="**/*.class"/>
+                <include name="**/*.jar"/>
+                <include name="WEB-INF/web.xml"/>
+            </fileset>
+            <manifest>
+                <attribute name="Class-Path" value="${lib.list}"/>
+            </manifest>
+
+        </jar>
+    </target>
+
+    <target name="build" depends="servlet-war">
+    </target>
+
+
+    <target name="servlet" depends="build">
+        <copy file="${conf.dir}${file.separator}web.xml" tofile="${web-inf.dir}${file.separator}web.xml" overwrite="true" />
+        <sequential>
+            <exec executable="cp">
+                <arg line="servlet.war ${jetty.dir}/webapps/"/>
+            </exec>
+            <exec executable="cp">
+                <arg line="${web-inf.dir}/web.xml ${jetty.dir}/webapps/WEB-INF/"/>
+            </exec>
+
+
+            <exec executable="java" dir="${jetty.dir}">
+                <arg line="-jar start.jar --lib=${inputlib.dir}:${third.dir}"/>
+            </exec>
+
+        </sequential>
+    </target>
+
+
+</project>

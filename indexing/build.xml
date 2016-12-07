@@ -71,6 +71,29 @@
         </jar>
     </target>
 
+    <manifestclasspath property="classpathlocal" jarfile="test.jar">
+        <classpath>
+            <pathelement path="${classes.dir}" />
+            <fileset dir="${inputlib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </classpath>
+        </manifestclasspath>
+
+    <target name="local" depends="compile">
+        <delete file="local.jar"/>
+        <jar destfile="local.jar" update="true">
+            <fileset dir="${classes.dir}">
+                <include name="**/*.class"/>
+            </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="com.indexer.IndexerJob"/>
+                <attribute name="Class-Path" value="${inputlib.dir}" />
+            </manifest>
+            <fileset dir="${inputlib.dir}" includes="**/*.jar" />
+        </jar>
+    </target>
+
 
     <target name="sample" depends="compiles3">
         <java classname="com.amazonaws.samples.S3Sample" fork="true">

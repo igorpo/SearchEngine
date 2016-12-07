@@ -23,3 +23,8 @@ aws-java-sdk-1.11.60
 hadoop-2.7.3
 out/
 aws-samples/
+local.jar
+test.jar
+servlet/lib/
+indexing/lib/
+pom.xml

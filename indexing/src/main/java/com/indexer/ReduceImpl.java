@@ -36,10 +36,6 @@ public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Tex
     @Override
     public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 
-        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        DynamoDB dynamoDB = new DynamoDB(client);
-
-        Table table = dynamoDB.getTable("testcount");
 
         ArrayList<Text> urls = new ArrayList<>();
         while (values.hasNext()) {
