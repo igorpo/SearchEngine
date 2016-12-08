@@ -52,7 +52,6 @@ public class FileLogger {
         try {
             LOG_ROOT_LOCATION = path;
             // check if folder exists, if not - create it
-            new File(path).mkdirs();
             d = new BufferedWriter(new FileWriter(LOG_ROOT_LOCATION));
             d.write("Server log: " + getDateString() + NL + NL);
             d.flush();
@@ -81,5 +80,6 @@ public class FileLogger {
             e.printStackTrace();
         }
     }
+
 }
 

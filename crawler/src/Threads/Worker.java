@@ -1,6 +1,7 @@
 package threads;
 
 import crawler.Messenger;
+import databases.DynamoWrapper;
 import databases.S3Wrapper;
 import filelogger.FileLogger;
 import frontier.Frontier;
@@ -156,9 +157,7 @@ public class Worker extends Thread {
 
                 if (!master.haveSeenUrl(url) && !url.equals(BAD)) {
 
-//                    master.addSeenUrl(url);
                     boolean isSecure = url.contains("https://");
-                 //   log.info("\n\nFetching information for URL: " + url);
                     URLInfo normalizedInfo = new URLInfo(url);
 
                     // look for robots.txt
@@ -245,7 +244,6 @@ public class Worker extends Thread {
                                 // absolute url
                                 try {
                                     this.frontier.enqueue(redirectedTo /*+ IS_WWW_REQUIRED*/);
-//                                    this.master.removeFromSeenURLs(normalize(redirectedTo));
                                 } catch (IOException e) {
                                     log.error("Error in enqueuing a url " + e.getMessage());
                                 }
@@ -255,7 +253,6 @@ public class Worker extends Thread {
                                     String absolute = new URL(base, redirectedTo).toString();
                                     try {
                                         this.frontier.enqueue(absolute /*+ IS_WWW_REQUIRED*/);
-//                                        this.master.removeFromSeenURLs(normalize(absolute));
                                     } catch (IOException e) {
                                         log.error("Error in enqueuing a url " + e.getMessage());
                                     }
@@ -271,7 +268,6 @@ public class Worker extends Thread {
                         if (contentLength == null) {
                             contentLength = "0";
                         }
-                   //     log.info(url + " has content type " + contentType + " and content length of " + contentLength + " bytes");
                         if (contentType == null || !isCrawlableFile(contentType)) {
                             log.info(normalizedInfo.getFilePath() + " is not the correct MIME type to crawl. Continuing...");
                             continue;
@@ -307,7 +303,6 @@ public class Worker extends Thread {
                                 // TODO store stuff here later
                                 // TODO save thread id + hash in metadata (S3Wrapper)
                                 // important bc frontiers siloed by worker
-    //                            db.storeDocument(url, body, now, contentType);
 
                                 Map<String, String> metadata = new HashMap<>();
 
@@ -464,12 +459,10 @@ public class Worker extends Thread {
                 // absolute link
                 handleLink(outgoingLinks, link);
 
-//                log.info("Adding to queue: " + link);
             } else {
                 try {
                     URL base = new URL(url);
                     String absolute = new URL(base, link).toString();
-//                    log.info("Adding to queue: " + absolute);
 
                     handleLink(outgoingLinks, absolute);
                 } catch (MalformedURLException e) {
@@ -484,7 +477,7 @@ public class Worker extends Thread {
 
     private void batchSaveLinks(Set<String> links, String url) throws IOException {
         List<String> linksList = links.stream().collect(Collectors.toList());
-//        DynamoWrapper.storeURLOutgoingLinks(url, linksList);
+        DynamoWrapper.storeURLOutgoingLinks(url, linksList);
         this.frontier.enqueue(linksList);
     }
 
@@ -502,7 +495,6 @@ public class Worker extends Thread {
 
     private void handleLink(Set<String> outgoingLinks, String url) throws IOException {
         outgoingLinks.add(url);
-        master.addSeenUrl(url);
     }
 
     String[] seeds = {"https://www.google.com/",
