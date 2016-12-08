@@ -70,12 +70,14 @@ public class Master {
     /**
      * Bucket name for S3 db
      */
-    static final String BUCKET_NAME = "cis-455";
+//    static final String BUCKET_NAME = "cis-455";
+    static final String BUCKET_NAME = "cis-455-test";
 
     /**
      * Dynamo table name for {url -> [outgoing link list]}
      */
-    static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+//    static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+    static final String DYNAMO_DB_NAME = "testing_urls";
 
     /**
      * The Master class controls the extended specified thread class

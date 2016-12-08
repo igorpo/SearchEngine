@@ -451,6 +451,7 @@ public class Worker extends Thread {
         if (this.frontier.size() == SyncMultQueue.MAX_QUEUE_SIZE) {
             throw new IOException("Worker id: "+ this.getID() +" Queue is full. Not saving links from URL = " + url);
         }
+
         Set<String> outgoingLinks = new HashSet<>();
         for (int i = 0; i < anchors.getLength(); i++) {
             org.w3c.dom.Node n = anchors.item(i);
@@ -463,12 +464,12 @@ public class Worker extends Thread {
                 // absolute link
                 handleLink(outgoingLinks, link);
 
-                log.info("Adding to queue: " + link);
+//                log.info("Adding to queue: " + link);
             } else {
                 try {
                     URL base = new URL(url);
                     String absolute = new URL(base, link).toString();
-                    log.info("Adding to queue: " + absolute);
+//                    log.info("Adding to queue: " + absolute);
 
                     handleLink(outgoingLinks, absolute);
                 } catch (MalformedURLException e) {
@@ -477,13 +478,17 @@ public class Worker extends Thread {
             }
         }
 
-        // Save outgoing links to Dynamo
-        DynamoWrapper.storeURLOutgoingLinks(url, outgoingLinks.stream().collect(Collectors.toList()));
+        // Save outgoing links to Dynamo and Frontier
+        batchSaveLinks(outgoingLinks, url);
+    }
 
+    private void batchSaveLinks(Set<String> links, String url) throws IOException {
+        List<String> linksList = links.stream().collect(Collectors.toList());
+        DynamoWrapper.storeURLOutgoingLinks(url, linksList);
+        this.frontier.enqueue(linksList);
     }
 
     private void handleLink(Set<String> outgoingLinks, String url) throws IOException {
-        this.frontier.enqueue(url);
         outgoingLinks.add(url);
     }
 }

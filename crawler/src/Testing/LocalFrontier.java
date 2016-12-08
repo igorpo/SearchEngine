@@ -2,7 +2,9 @@ package testing;
 
 import frontier.Frontier;
 
+import java.io.IOException;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -28,6 +30,11 @@ public class LocalFrontier implements Frontier {
     @Override
     public synchronized void enqueue(String URL) {
         q.add(URL);
+    }
+
+    @Override
+    public void enqueue(List<String> linksList) throws IOException {
+
     }
 
     @Override

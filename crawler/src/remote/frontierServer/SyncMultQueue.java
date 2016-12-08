@@ -1,6 +1,7 @@
 package remote.frontierServer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -21,6 +22,18 @@ public class SyncMultQueue {
             subqueues.put(threadID, queue);
         }
         return queue.poll();
+    }
+
+    public static boolean enqueue(String threadID, List<String> links) {
+        BlockingQueue<String> queue = subqueues.get(threadID);
+
+        if (queue == null) {
+            System.out.println("THREADID == " + threadID + " and queue doesn't exist");
+            queue = new ArrayBlockingQueue(QUEUE_SIZE);
+            subqueues.put(threadID, queue);
+        }
+
+        return queue.addAll(links);
     }
 
     public static boolean enqueue(String threadID, String obj) {

@@ -117,6 +117,10 @@ public class S3Wrapper {
         return new Base32().encodeAsString(arg0.getBytes());
     }
 
+    public static String decodeSafeKey(String arg0) {
+        return new String(new Base32().decode(arg0.getBytes()));
+    }
+
     public static InputStream getDocument(String key) {
         String safeKey = encodeSafeKey(key);
 
