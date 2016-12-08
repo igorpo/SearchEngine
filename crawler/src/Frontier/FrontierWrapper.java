@@ -1,9 +1,15 @@
 package frontier;
 
-import java.io.*;
+import remote.frontierServer.SerializableArrayList;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Created by YagilB on 01/12/2016.
@@ -43,7 +49,7 @@ public class FrontierWrapper implements Frontier {
     @Override
     public int size() throws IOException {
         HttpURLConnection conn = sendReq("size",null, "GET");
-        System.out.println("FrontierWrapper: Getting size ID == "+this.threadID+". Response code == " + conn.getResponseCode());
+//        System.out.println("FrontierWrapper: Getting size ID == "+this.threadID+". Response code == " + conn.getResponseCode());
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new RuntimeException("Attempt to get size of threadID " + threadID + " failed. Server said: " + conn.getResponseCode());
         }
@@ -58,7 +64,7 @@ public class FrontierWrapper implements Frontier {
             stringBuffer.append(inputLine);
         in.close();
 
-        System.out.println("STRING BUFFER ==== " + stringBuffer.toString());
+//        System.out.println("STRING BUFFER ==== " + stringBuffer.toString());
 
         return Integer.parseInt(stringBuffer.toString());
     }
@@ -79,18 +85,30 @@ public class FrontierWrapper implements Frontier {
 
     }
 
+    public void enqueue(List<String> linksList) throws IOException {
+        SerializableArrayList serList = new SerializableArrayList(linksList);
+        String serializedList = serList.serialize();
+
+        HttpURLConnection conn = sendReq("batch/enqueue", "urls="+serializedList, "POST");
+
+        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new RuntimeException("Thread " +this.threadID+ " attempted to enqueue batch, but failed. Server said: " + conn.getResponseCode());
+        }
+
+    }
 
     private HttpURLConnection sendReq(String action, String parameters, String method) throws IOException {
         String u = remoteAddr + "/" + this.threadID + "/" + action;
         URL url = new URL(u);
 
-        System.out.println("Send req to URL " + u);
+//        System.out.println("Send req to URL " + u);
 
         HttpURLConnection conn = (HttpURLConnection)url.openConnection();
         conn.setRequestProperty("Secret", this.secret);
 
         conn.setRequestMethod(method);
         conn.setDoOutput(true);
+        conn.setRequestProperty("Connection", "keep-alive");
 
         if (method.equals("POST")) {
 
@@ -107,7 +125,7 @@ public class FrontierWrapper implements Frontier {
 
         } else {
             //conn.getOutputStream();
-            System.out.println("SendReq with GET");
+//            System.out.println("SendReq with GET");
         }
 
         return conn;

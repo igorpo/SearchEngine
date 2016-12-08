@@ -2,6 +2,7 @@ package threads;
 
 import crawler.Messenger;
 import databases.DynamoWrapper;
+import filelogger.FileLogger;
 import frontier.Frontier;
 import robots.RobotsTxtInfo;
 import databases.S3Wrapper;
@@ -70,12 +71,16 @@ public class Master {
     /**
      * Bucket name for S3 db
      */
-    static final String BUCKET_NAME = "cis-455";
+    private static final String BUCKET_NAME = "cis-455";
+//    static final String BUCKET_NAME = "cis-455-test";
 
     /**
      * Dynamo table name for {url -> [outgoing link list]}
      */
-    static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+//    static final String DYNAMO_DB_NAME = "testing_urls";
+
+    private static final String LOG_PATH = "/logs/out.log";
 
     /**
      * The Master class controls the extended specified thread class
@@ -94,6 +99,7 @@ public class Master {
         visitedUrls = new HashSet<>();
         S3Wrapper.init(BUCKET_NAME);
         DynamoWrapper.init(DYNAMO_DB_NAME);
+        FileLogger.init(LOG_PATH);
         try {
             initThreads();
         } catch (Exception e) {
@@ -181,6 +187,7 @@ public class Master {
      * @return true if seen, false otherwise
      */
     public boolean haveSeenUrl(String url) {
+//        return DynamoWrapper.urlHasBeenSeen(url);
         synchronized (visitedUrls) {
             return visitedUrls.contains(url);
         }
