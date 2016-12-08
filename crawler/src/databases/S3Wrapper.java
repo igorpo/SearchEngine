@@ -6,7 +6,6 @@ package databases;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -25,16 +24,17 @@ public class S3Wrapper {
     private static AccessControlList acl = null;
 
     public static void init(String buckName) {
-        try {
-            credentials = new ProfileCredentialsProvider().getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "Cannot load the credentials from the credential profiles file. " +
-                            "Please make sure that your credentials file is at the correct " +
-                            "location (~/.aws/credentials), and is in valid format.",
-                    e);
-        }
-        s3 = new AmazonS3Client(credentials);
+//        try {
+//            credentials = new ProfileCredentialsProvider().getCredentials();
+//        } catch (Exception e) {
+//            throw new AmazonClientException(
+//                    "Cannot load the credentials from the credential profiles file. " +
+//                            "Please make sure that your credentials file is at the correct " +
+//                            "location (~/.aws/credentials), and is in valid format.",
+//                    e);
+//        }
+
+        s3 = new AmazonS3Client(/*credentials*/);
         bucketName = buckName;
         acl = new AccessControlList();
         acl.grantPermission(GroupGrantee.AllUsers, Permission.Read);

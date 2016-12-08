@@ -1,26 +1,21 @@
 package threads;
 
 import crawler.Messenger;
-import databases.DynamoWrapper;
 import databases.S3Wrapper;
+import filelogger.FileLogger;
 import frontier.Frontier;
 import frontier.FrontierWrapper;
 import httpClient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.NodeList;
-import org.w3c.tidy.Tidy;
 import remote.frontierServer.SyncMultQueue;
 import robots.Robots;
 import robots.RobotsTxtInfo;
 import url.URLInfo;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,70 +85,7 @@ public class Worker extends Thread {
         Frontier frontier = new FrontierWrapper();
         frontier.init(getID());
         log.info("INIT FRONTIER WITH ID == " + getID());
-        switch (getID()) {
-            case "0":
-                frontier.enqueue("http://www.wsj.com");
-                break;
-            case "1":
-                frontier.enqueue("http://www.nytimes.com");
-                break;
-            case "2":
-                frontier.enqueue("http://www.bbc.com");
-                break;
-            case "3":
-                frontier.enqueue("http://www.cnn.com");
-                break;
-            case "4":
-                frontier.enqueue("http://www.apple.com");
-                break;
-            case "5":
-                frontier.enqueue("https://www.wikipedia.org");
-                break;
-            case "6":
-                frontier.enqueue("https://www.yahoo.com/news");
-                break;
-            case "7":
-                frontier.enqueue("https://www.amazon.com");
-                break;
-            case "8":
-                frontier.enqueue("https://www.ft.com");
-                break;
-            case "9":
-                frontier.enqueue("https://news.ycombinator.com");
-                break;
-            case "10":
-                frontier.enqueue("http://www.stackoverflow.com");
-                break;
-            case "11":
-                frontier.enqueue("https://www.pinterest.com");
-                break;
-            case "12":
-                frontier.enqueue("https://www.github.com");
-                break;
-            case "13":
-                frontier.enqueue("https://news.google.com");
-                break;
-            case "14":
-                frontier.enqueue("https://www.google.com/flights");
-                break;
-            case "15":
-                frontier.enqueue("http://www.rollingstone.com/");
-                break;
-            case "16":
-                frontier.enqueue("http://www.vogue.com/");
-                break;
-            case "17":
-                frontier.enqueue("http://www.huffingtonpost.com/");
-                break;
-            case "18":
-                frontier.enqueue("http://www.nfl.com/");
-                break;
-            case "19":
-                frontier.enqueue("http://www.fifa.com/");
-                break;
-            default:
-                break;
-        }
+        frontier.enqueue(seeds[Integer.parseInt(getID())]);
         setFrontier(frontier);
         setMaster(master);
         setMessenger(msgr);
@@ -170,7 +102,7 @@ public class Worker extends Thread {
             int docsSoFar;
             while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) <= master.getMaxDocuments()) {
                 if (docsSoFar % 100 == 0)
-                    log.info("Number of documents processed so far: " + docsSoFar);
+                    FileLogger.info("Number of documents processed so far: " + docsSoFar);
 
                 // Should I sleep, or keep going
                 boolean isEmpty;
@@ -572,4 +504,85 @@ public class Worker extends Thread {
         outgoingLinks.add(url);
         master.addSeenUrl(url);
     }
+
+    String[] seeds = {"https://www.google.com/",
+            "https://www.facebook.com/",
+            "https://twitter.com/",
+            "https://www.youtube.com/",
+            "https://wordpress.org/",
+            "https://www.linkedin.com/",
+            "https://www.instagram.com/",
+            "https://www.pinterest.com/",
+            "https://www.wikipedia.org/",
+            "http://www.adobe.com/",
+            "https://www.blogger.com",
+            "http://www.rollingstones.com/",
+            "https://wordpress.com/",
+            "http://www.apple.com/",
+            "https://www.tumblr.com/",
+            "https://www.amazon.com/",
+            "https://vimeo.com/",
+            "https://www.yahoo.com/",
+            "https://www.microsoft.com/",
+            "http://www.nytimes.com/",
+            "http://www.bbc.com",
+            "https://soundcloud.com/",
+            "http://www.stumbleupon.com/",
+            "http://www.cnn.com/",
+            "https://github.com/",
+            "https://www.theguardian.com/us",
+            "http://www.imdb.com/",
+            "http://www.foodnetwork.com/",
+            "https://www.nih.gov/",
+            "http://www.forbes.com/",
+            "https://www.yelp.com/",
+            "http://www.wsj.com/",
+            "http://www.slideshare.net/",
+            "https://www.etsy.com/",
+            "http://www.ebay.com/",
+            "http://www.about.com/",
+            "http://www.aol.com/",
+            "https://www.eventbrite.com/",
+            "https://archive.org/",
+            "http://www.reuters.com/",
+            "http://www.telegraph.co.uk/",
+            "http://www.usatoday.com/",
+            "https://www.wikimedia.org/",
+            "http://www.bloomberg.com/",
+            "http://www.cdc.gov/",
+            "http://time.com/",
+            "https://www.meetup.com/",
+            "http://www.latimes.com/",
+            "http://www.harvard.edu/",
+            "http://www.npr.org/",
+            "https://www.tripadvisor.com/",
+            "http://bandcamp.com/",
+            "https://foursquare.com/",
+            "http://web.mit.edu/",
+            "https://www.wired.com/",
+            "https://www.nasa.gov/",
+            "http://www.economist.com/",
+            "https://www.kickstarter.com/",
+            "http://www.upenn.edu/",
+            "http://www.ted.com/",
+            "http://www.booking.com/",
+            "https://www.reddit.com/",
+            "http://www.businessinsider.com/",
+            "https://www.goodreads.com/",
+            "http://mashable.com/",
+            "http://www.nationalgeographic.com/",
+            "http://www.cbsnews.com/",
+            "https://www.whitehouse.gov/",
+            "https://www.spotify.com/us/",
+            "https://medium.com/",
+            "https://techcrunch.com/",
+            "https://www.buzzfeed.com/",
+            "https://www.theatlantic.com/",
+            "http://www.webmd.com/",
+            "https://www.trustpilot.com/",
+            "http://www.nature.com/",
+            "https://www.usa.gov/",
+            "http://www.clas.ufl.edu/au/",
+            "http://mlb.mlb.com/home",
+            "http://www.espn.com/"};
 }

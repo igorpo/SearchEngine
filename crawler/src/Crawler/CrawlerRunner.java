@@ -14,7 +14,7 @@ public class CrawlerRunner {
 
     public static void main(String[] args) throws IOException {
         int maxDocuments = 100000;
-        int maxThreads = 5;
+        int maxThreads = 80;
 
         if (args.length == 1) {
             try {

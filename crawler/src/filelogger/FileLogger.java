@@ -1,10 +1,7 @@
 package filelogger;
 
 
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
@@ -54,8 +51,10 @@ public class FileLogger {
         d = null;
         try {
             LOG_ROOT_LOCATION = path;
+            // check if folder exists, if not - create it
+            new File(path).mkdirs();
             d = new BufferedWriter(new FileWriter(LOG_ROOT_LOCATION));
-            d.write("igorpo Server log: " + getDateString() + NL + NL);
+            d.write("Server log: " + getDateString() + NL + NL);
             d.flush();
         } catch (FileNotFoundException ex) {
 

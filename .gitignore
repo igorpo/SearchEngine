@@ -18,6 +18,14 @@ crawler/aws-java-sdk-1.11.61/
 *.war
 *.ear
 
+
+# jar related
+crawler/crawler.properties
+crawler/crawler.xml
+crawler/module_crawler.xml
+crawler/src/META-INF/
+crawler/src/frontierJar/
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 aws-java-sdk-1.11.60

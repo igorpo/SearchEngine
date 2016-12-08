@@ -3,7 +3,6 @@ package databases;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -44,9 +43,13 @@ public class DynamoWrapper {
 
         // acquire long term credentials from the properties file
 
-        longTermCredentials_ = new ProfileCredentialsProvider().getCredentials();
+//        longTermCredentials_ = new ProfileCredentialsProvider().getCredentials();
 
-        dynamoClient = new AmazonDynamoDBClient(longTermCredentials_);
+//        dynamoClient = new AmazonDynamoDBClient(longTermCredentials_);
+
+        // For EC2
+        dynamoClient = new AmazonDynamoDBClient();
+
         dynamoDB = new DynamoDB(dynamoClient);
 
         // this is needed for it to know where to find our objects
