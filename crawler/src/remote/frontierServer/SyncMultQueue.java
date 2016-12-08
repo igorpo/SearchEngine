@@ -47,7 +47,7 @@ public class SyncMultQueue {
     }
 
     public static int size(String threadID) {
-        System.out.println("Calling /size for threadID " + threadID);
+//        System.out.println("Calling /size for threadID " + threadID);
 
         BlockingQueue<String> queue = subqueues.get(threadID);
 
@@ -56,7 +56,7 @@ public class SyncMultQueue {
             subqueues.put(threadID, queue);
         }
 
-        System.out.println("Size for threadID " + threadID + " is " + queue.size());
+        System.out.println("************************************ Size for threadID #[" + threadID + "] is " + queue.size());
 
         return queue.size();
     }

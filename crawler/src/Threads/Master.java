@@ -183,10 +183,10 @@ public class Master {
      * @return true if seen, false otherwise
      */
     public boolean haveSeenUrl(String url) {
-        return DynamoWrapper.urlHasBeenSeen(url);
-//        synchronized (visitedUrls) {
-//            return visitedUrls.contains(url);
-//        }
+//        return DynamoWrapper.urlHasBeenSeen(url);
+        synchronized (visitedUrls) {
+            return visitedUrls.contains(url);
+        }
     }
 
     /**

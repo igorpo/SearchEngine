@@ -22,6 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -92,18 +94,22 @@ public class Worker extends Thread {
         switch (getID()) {
             case "0":
                 frontier.enqueue("http://www.wsj.com");
+//                frontier.enqueue("http://www.bbc.com");
                 break;
             case "1":
                 frontier.enqueue("http://www.nytimes.com");
+//                frontier.enqueue("http://www.bbc.com");
                 break;
             case "2":
-                frontier.enqueue("http://www.cnn.com");
+                frontier.enqueue("http://www.bbc.com");
                 break;
             case "3":
-                frontier.enqueue("http://www.bbc.com");
+//                frontier.enqueue("http://www.bbc.com");
+                frontier.enqueue("http://www.cnn.com");
                 break;
             case "4":
                 frontier.enqueue("http://www.apple.com");
+//                frontier.enqueue("http://www.bbc.com");
                 break;
             case "5":
                 frontier.enqueue("https://www.wikipedia.org");
@@ -212,7 +218,7 @@ public class Worker extends Thread {
                     String url_not_normalized = this.frontier.poll();
                     url = normalize(url_not_normalized);
 
-                    log.info("Polled and got URL " + url_not_normalized + " normalized to " + url);
+                   // log.info("Polled and got URL " + url_not_normalized + " normalized to " + url);
                 } catch (IOException e) {
                     log.error("Error with polling the queue... Continuing");
                     continue;
@@ -226,7 +232,7 @@ public class Worker extends Thread {
 
 //                    master.addSeenUrl(url);
                     boolean isSecure = url.contains("https://");
-                    log.info("\n\nFetching information for URL: " + url);
+                 //   log.info("\n\nFetching information for URL: " + url);
                     URLInfo normalizedInfo = new URLInfo(url);
 
                     // look for robots.txt
@@ -308,11 +314,11 @@ public class Worker extends Thread {
                         String redirectedTo = client.getProperty(client.LOCATION);
 
                         if (redirectedTo != null) {
-                            log.info("Redirecting " + url + " to " + redirectedTo + " bc statusCode was " + statusCode);
+                         //   log.info("Redirecting " + url + " to " + redirectedTo + " bc statusCode was " + statusCode);
                             if (redirectedTo.startsWith("http")) {
                                 // absolute url
                                 try {
-                                    this.frontier.enqueue(redirectedTo + IS_WWW_REQUIRED);
+                                    this.frontier.enqueue(redirectedTo /*+ IS_WWW_REQUIRED*/);
 //                                    this.master.removeFromSeenURLs(normalize(redirectedTo));
                                 } catch (IOException e) {
                                     log.error("Error in enqueuing a url " + e.getMessage());
@@ -322,7 +328,7 @@ public class Worker extends Thread {
                                     URL base = new URL(url);
                                     String absolute = new URL(base, redirectedTo).toString();
                                     try {
-                                        this.frontier.enqueue(absolute + IS_WWW_REQUIRED);
+                                        this.frontier.enqueue(absolute /*+ IS_WWW_REQUIRED*/);
 //                                        this.master.removeFromSeenURLs(normalize(absolute));
                                     } catch (IOException e) {
                                         log.error("Error in enqueuing a url " + e.getMessage());
@@ -339,7 +345,7 @@ public class Worker extends Thread {
                         if (contentLength == null) {
                             contentLength = "0";
                         }
-                        log.info(url + " has content type " + contentType + " and content length of " + contentLength + " bytes");
+                   //     log.info(url + " has content type " + contentType + " and content length of " + contentLength + " bytes");
                         if (contentType == null || !isCrawlableFile(contentType)) {
                             log.info(normalizedInfo.getFilePath() + " is not the correct MIME type to crawl. Continuing...");
                             continue;
@@ -367,7 +373,7 @@ public class Worker extends Thread {
                                 dateLastAccessed)) {
                             this.master.addSeenUrl(url);
                             if (isCrawlableFile(contentType)) {
-                                log.info("url " + url + " is crawlable file");
+                         //       log.info("url " + url + " is crawlable file");
                                 Date now = new Date();
                                 String docType = documentType(contentType);
                                 String body = client.getProperty(client.RESPONSE_BODY);
@@ -393,7 +399,7 @@ public class Worker extends Thread {
                                 master.increaseProcessedDocCount();
     //                            log.info(url + ": Downloading");
                                 if (docType.equals(HttpClient.HTML)) {
-                                    log.info("EXTRACTING LINKS FOR URL == " + url);
+                              //      log.info("EXTRACTING LINKS FOR URL == " + url);
                                     try {
                                         extractLinks(body, url);
                                     } catch (IOException e) {
@@ -504,26 +510,30 @@ public class Worker extends Thread {
      * @param url url to create path from
      */
     private void extractLinks(String html, String url) throws IOException {
-        InputStream htmlStream = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
-        Tidy tidy = new Tidy();
-        tidy.setShowWarnings(false);
-        tidy.setShowErrors(0);
-        tidy.setQuiet(true);
-        org.w3c.dom.Document doc = tidy.parseDOM(htmlStream, null);
-        NodeList anchors = doc.getElementsByTagName("a");
+//        InputStream htmlStream = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
+//        Tidy tidy = new Tidy();
+//        tidy.setShowWarnings(false);
+//        tidy.setShowErrors(0);
+//        tidy.setQuiet(true);
+//        org.w3c.dom.Document doc = tidy.parseDOM(htmlStream, null);
+//        NodeList anchors = doc.getElementsByTagName("a");
 
+        Set<String> anchors = extractLinks(html);
+
+//        log.info("Size of anchors is " + anchors.size());
+//        System.exit(0);
         if (this.frontier.size() == SyncMultQueue.MAX_QUEUE_SIZE) {
             throw new IOException("Worker id: "+ this.getID() +" Queue is full. Not saving links from URL = " + url);
         }
 
         Set<String> outgoingLinks = new HashSet<>();
-        for (int i = 0; i < anchors.getLength(); i++) {
-            org.w3c.dom.Node n = anchors.item(i);
-            if (n.getAttributes() == null || n.getAttributes().getNamedItem("href") == null) {
-                continue;
-            }
+        for (String link : anchors) {
+//            org.w3c.dom.Node n = anchors.get(i);
+//            if (n.getAttributes() == null || n.getAttributes().getNamedItem("href") == null) {
+//                continue;
+//            }
 
-            String link = n.getAttributes().getNamedItem("href").getNodeValue();
+//            String link = n.getAttributes().getNamedItem("href").getNodeValue();
             if (link.startsWith("http")) {
                 // absolute link
                 handleLink(outgoingLinks, link);
@@ -548,11 +558,24 @@ public class Worker extends Thread {
 
     private void batchSaveLinks(Set<String> links, String url) throws IOException {
         List<String> linksList = links.stream().collect(Collectors.toList());
-        DynamoWrapper.storeURLOutgoingLinks(url, linksList);
+//        DynamoWrapper.storeURLOutgoingLinks(url, linksList);
         this.frontier.enqueue(linksList);
+    }
+
+    private Set<String> extractLinks(String rawHtml) {
+        Set<String> links = new HashSet<>();
+        String pattern = "<a.[^<]*href=[\"|\'](\\S+)[\"|\'].[^<]*</a>";
+        Pattern r = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+        Matcher m = r.matcher(rawHtml);
+
+        while (m.find()) {
+            links.add(m.group(1));
+        }
+        return links;
     }
 
     private void handleLink(Set<String> outgoingLinks, String url) throws IOException {
         outgoingLinks.add(url);
+        master.addSeenUrl(url);
     }
 }
