@@ -90,26 +90,21 @@ public class Worker extends Thread {
         Frontier frontier = new FrontierWrapper();
         frontier.init(getID());
         log.info("INIT FRONTIER WITH ID == " + getID());
-//        frontier.enqueue("http://www.nytimes.com");
         switch (getID()) {
             case "0":
                 frontier.enqueue("http://www.wsj.com");
-//                frontier.enqueue("http://www.bbc.com");
                 break;
             case "1":
                 frontier.enqueue("http://www.nytimes.com");
-//                frontier.enqueue("http://www.bbc.com");
                 break;
             case "2":
                 frontier.enqueue("http://www.bbc.com");
                 break;
             case "3":
-//                frontier.enqueue("http://www.bbc.com");
                 frontier.enqueue("http://www.cnn.com");
                 break;
             case "4":
                 frontier.enqueue("http://www.apple.com");
-//                frontier.enqueue("http://www.bbc.com");
                 break;
             case "5":
                 frontier.enqueue("https://www.wikipedia.org");
@@ -172,7 +167,6 @@ public class Worker extends Thread {
     public void run() {
 
         try {
-            // TODO: != or <=
             int docsSoFar;
             while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) <= master.getMaxDocuments()) {
                 if (docsSoFar % 100 == 0)
