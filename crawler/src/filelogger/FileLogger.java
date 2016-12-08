@@ -57,9 +57,9 @@ public class FileLogger {
             d.write("Server log: " + getDateString() + NL + NL);
             d.flush();
         } catch (FileNotFoundException ex) {
-
+            ex.printStackTrace();
         } catch (IOException e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -76,7 +76,9 @@ public class FileLogger {
             d.write(level + getDateString() + ": "+ toLog + NL);
             d.flush();
         } catch (IOException e) {
-
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
