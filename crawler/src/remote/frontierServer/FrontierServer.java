@@ -30,7 +30,7 @@ public class FrontierServer {
                 }
 
                 String threadID = request.params("threadID");
-                System.out.println("CALLED /" + threadID + "/poll");
+              //  System.out.println("CALLED /" + threadID + "/poll");
                 return SyncMultQueue.poll(threadID);
             }
         });
@@ -38,7 +38,7 @@ public class FrontierServer {
         Spark.get(new Route("/:threadID/size") {
             @Override
             public Object handle(Request request, Response response) {
-                System.out.println("got request: /"+request.params("threadID")+"/size");
+           //     System.out.println("got request: /"+request.params("threadID")+"/size");
                 if (request.headers("Secret") == null ||
                         !request.headers("secret").equals(secret)) {
                     response.status(403);
@@ -64,7 +64,7 @@ public class FrontierServer {
                 String threadID = request.params("threadID");
                 String url = request.queryParams("url");
 
-                System.out.println("CALLED /" + threadID + "/enqueue with url = " + url);
+             //   System.out.println("CALLED /" + threadID + "/enqueue with url = " + url);
                 return SyncMultQueue.enqueue(threadID, url);
             }
         });
@@ -95,10 +95,10 @@ public class FrontierServer {
                 }
                 if (linksList == null) return false;
 
-                System.out.println("CALLED /" + threadID + "/enqueue with batch");
+             //   System.out.println("CALLED /" + threadID + "/enqueue with batch");
                 boolean res = SyncMultQueue.enqueue(threadID, linksList);
                 if (res) {
-                    System.out.println("********SUCCESSFULLY BATCH ADDED "+linksList.size()+" LINKS FROM THREAD ID = " + threadID);
+                    System.out.println("**********************************************SUCCESSFULLY BATCH ADDED "+linksList.size()+" LINKS FROM THREAD ID = " + threadID);
 //                    for (String u : linksList) {
 //                        System.out.println(u);
 //                    }
