@@ -99,9 +99,9 @@ public class FrontierServer {
                 boolean res = SyncMultQueue.enqueue(threadID, linksList);
                 if (res) {
                     System.out.println("********SUCCESSFULLY BATCH ADDED "+linksList.size()+" LINKS FROM THREAD ID = " + threadID);
-                    for (String u : linksList) {
-                        System.out.println(u);
-                    }
+//                    for (String u : linksList) {
+//                        System.out.println(u);
+//                    }
                 }
 
                 return res;
