@@ -105,6 +105,51 @@ public class Worker extends Thread {
             case "4":
                 frontier.enqueue("http://www.apple.com");
                 break;
+            case "5":
+                frontier.enqueue("https://www.wikipedia.org");
+                break;
+            case "6":
+                frontier.enqueue("https://www.yahoo.com/news");
+                break;
+            case "7":
+                frontier.enqueue("https://www.amazon.com");
+                break;
+            case "8":
+                frontier.enqueue("https://www.ft.com");
+                break;
+            case "9":
+                frontier.enqueue("https://news.ycombinator.com");
+                break;
+            case "10":
+                frontier.enqueue("http://www.stackoverflow.com");
+                break;
+            case "11":
+                frontier.enqueue("https://www.pinterest.com");
+                break;
+            case "12":
+                frontier.enqueue("https://www.github.com");
+                break;
+            case "13":
+                frontier.enqueue("https://news.google.com");
+                break;
+            case "14":
+                frontier.enqueue("https://www.google.com/flights");
+                break;
+            case "15":
+                frontier.enqueue("http://www.rollingstone.com/");
+                break;
+            case "16":
+                frontier.enqueue("http://www.vogue.com/");
+                break;
+            case "17":
+                frontier.enqueue("http://www.huffingtonpost.com/");
+                break;
+            case "18":
+                frontier.enqueue("http://www.nfl.com/");
+                break;
+            case "19":
+                frontier.enqueue("http://www.fifa.com/");
+                break;
             default:
                 break;
         }
@@ -128,12 +173,28 @@ public class Worker extends Thread {
                     log.info("Number of documents processed so far: " + docsSoFar);
 
                 // Should I sleep, or keep going
-                if (this.frontier.isEmpty()) {
+                boolean isEmpty;
+                try {
+                    isEmpty = this.frontier.isEmpty();
+                } catch (IOException e) {
+                    Thread.sleep(10000);
+                    log.info("Thread " + getID() + " is sleeping because: " + e.getMessage());
+                    continue;
+                }
+
+                if (isEmpty) {
                     int trials = 0;
 
                     while (true) {
                         log.info("Checking if queue is empty for workerID " + this.getID());
-                        if (!this.frontier.isEmpty()) {
+                        try {
+                            isEmpty = this.frontier.isEmpty();
+                        } catch (IOException e) {
+                            Thread.sleep(10000);
+                            log.info("Thread " + getID() + " is sleeping because: " + e.getMessage());
+                            continue;
+                        }
+                        if (!isEmpty) {
                             break;
                         }
                         if (trials == MAX_TRIES) {
@@ -346,11 +407,13 @@ public class Worker extends Thread {
                     }
                 }
             }
-        } catch (IOException e) {
-            log.error("Could not reach remote queue... terminating thread " + e.getMessage());
+//       } catch (IOException e) {
+//            log.error("Could not reach remote queue... terminating thread " + e.getMessage());
+//            e.printStackTrace();
 
         } catch (InterruptedException e) {
             log.error("Could not sleep... terminating thread " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -376,6 +439,7 @@ public class Worker extends Thread {
             return false;
         }
         for (String link : disallowed) {
+            if (link.length() == 0) continue;
             if ((link.endsWith("/") && url.contains(link) && !url.endsWith(link) && !allowedContains(url, allowed))
                     || (link.charAt(link.length() - 1) != '/' && url.endsWith(link))) {
                 return true;

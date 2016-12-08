@@ -106,6 +106,7 @@ public class FrontierWrapper implements Frontier {
 
         conn.setRequestMethod(method);
         conn.setDoOutput(true);
+        conn.setRequestProperty("Connection", "keep-alive");
 
         if (method.equals("POST")) {
 
