@@ -1,27 +1,26 @@
 package threads;
 
 import crawler.Messenger;
-import frontier.*;
-import httpClient.HttpClient;
-import remote.frontierServer.SyncMultQueue;
-import robots.*;
+import databases.DynamoWrapper;
 import databases.S3Wrapper;
-import url.URLInfo;
+import filelogger.FileLogger;
+import frontier.Frontier;
+import frontier.FrontierWrapper;
+import httpClient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.NodeList;
-import org.w3c.tidy.Tidy;
+import remote.frontierServer.SyncMultQueue;
+import robots.Robots;
+import robots.RobotsTxtInfo;
+import url.URLInfo;
 
-import java.net.URL;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -87,26 +86,7 @@ public class Worker extends Thread {
         Frontier frontier = new FrontierWrapper();
         frontier.init(getID());
         log.info("INIT FRONTIER WITH ID == " + getID());
-//        frontier.enqueue("http://www.nytimes.com");
-        switch (getID()) {
-            case "0":
-                frontier.enqueue("http://www.wsj.com");
-                break;
-            case "1":
-                frontier.enqueue("http://www.nytimes.com");
-                break;
-            case "2":
-                frontier.enqueue("http://www.cnn.com");
-                break;
-            case "3":
-                frontier.enqueue("http://www.bbc.com");
-                break;
-            case "4":
-                frontier.enqueue("http://www.apple.com");
-                break;
-            default:
-                break;
-        }
+        frontier.enqueue(seeds[Integer.parseInt(getID())]);
         setFrontier(frontier);
         setMaster(master);
         setMessenger(msgr);
@@ -120,19 +100,34 @@ public class Worker extends Thread {
     public void run() {
 
         try {
-            // TODO: != or <=
             int docsSoFar;
-            while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) != master.getMaxDocuments()) {
+            while ((docsSoFar = master.getCurrentNumDocumentsProcessed()) <= master.getMaxDocuments()) {
                 if (docsSoFar % 100 == 0)
-                    log.info("Number of documents processed so far: " + docsSoFar);
+                    FileLogger.info("Number of documents processed so far: " + docsSoFar);
 
                 // Should I sleep, or keep going
-                if (this.frontier.isEmpty()) {
+                boolean isEmpty;
+                try {
+                    isEmpty = this.frontier.isEmpty();
+                } catch (IOException e) {
+                    Thread.sleep(10000);
+                    log.info("Thread " + getID() + " is sleeping because: " + e.getMessage());
+                    continue;
+                }
+
+                if (isEmpty) {
                     int trials = 0;
 
                     while (true) {
                         log.info("Checking if queue is empty for workerID " + this.getID());
-                        if (!this.frontier.isEmpty()) {
+                        try {
+                            isEmpty = this.frontier.isEmpty();
+                        } catch (IOException e) {
+                            Thread.sleep(10000);
+                            log.info("Thread " + getID() + " is sleeping because: " + e.getMessage());
+                            continue;
+                        }
+                        if (!isEmpty) {
                             break;
                         }
                         if (trials == MAX_TRIES) {
@@ -150,7 +145,7 @@ public class Worker extends Thread {
                     String url_not_normalized = this.frontier.poll();
                     url = normalize(url_not_normalized);
 
-                    log.info("Polled and got URL " + url_not_normalized + " normalized to " + url);
+                   // log.info("Polled and got URL " + url_not_normalized + " normalized to " + url);
                 } catch (IOException e) {
                     log.error("Error with polling the queue... Continuing");
                     continue;
@@ -162,9 +157,7 @@ public class Worker extends Thread {
 
                 if (!master.haveSeenUrl(url) && !url.equals(BAD)) {
 
-//                    master.addSeenUrl(url);
                     boolean isSecure = url.contains("https://");
-                    log.info("\n\nFetching information for URL: " + url);
                     URLInfo normalizedInfo = new URLInfo(url);
 
                     // look for robots.txt
@@ -246,12 +239,11 @@ public class Worker extends Thread {
                         String redirectedTo = client.getProperty(client.LOCATION);
 
                         if (redirectedTo != null) {
-                            log.info("Redirecting " + url + " to " + redirectedTo + " bc statusCode was " + statusCode);
+                         //   log.info("Redirecting " + url + " to " + redirectedTo + " bc statusCode was " + statusCode);
                             if (redirectedTo.startsWith("http")) {
                                 // absolute url
                                 try {
-                                    this.frontier.enqueue(redirectedTo + IS_WWW_REQUIRED);
-//                                    this.master.removeFromSeenURLs(normalize(redirectedTo));
+                                    this.frontier.enqueue(redirectedTo /*+ IS_WWW_REQUIRED*/);
                                 } catch (IOException e) {
                                     log.error("Error in enqueuing a url " + e.getMessage());
                                 }
@@ -260,8 +252,7 @@ public class Worker extends Thread {
                                     URL base = new URL(url);
                                     String absolute = new URL(base, redirectedTo).toString();
                                     try {
-                                        this.frontier.enqueue(absolute + IS_WWW_REQUIRED);
-//                                        this.master.removeFromSeenURLs(normalize(absolute));
+                                        this.frontier.enqueue(absolute /*+ IS_WWW_REQUIRED*/);
                                     } catch (IOException e) {
                                         log.error("Error in enqueuing a url " + e.getMessage());
                                     }
@@ -277,7 +268,6 @@ public class Worker extends Thread {
                         if (contentLength == null) {
                             contentLength = "0";
                         }
-                        log.info(url + " has content type " + contentType + " and content length of " + contentLength + " bytes");
                         if (contentType == null || !isCrawlableFile(contentType)) {
                             log.info(normalizedInfo.getFilePath() + " is not the correct MIME type to crawl. Continuing...");
                             continue;
@@ -305,7 +295,7 @@ public class Worker extends Thread {
                                 dateLastAccessed)) {
                             this.master.addSeenUrl(url);
                             if (isCrawlableFile(contentType)) {
-                                log.info("url " + url + " is crawlable file");
+                         //       log.info("url " + url + " is crawlable file");
                                 Date now = new Date();
                                 String docType = documentType(contentType);
                                 String body = client.getProperty(client.RESPONSE_BODY);
@@ -313,7 +303,6 @@ public class Worker extends Thread {
                                 // TODO store stuff here later
                                 // TODO save thread id + hash in metadata (S3Wrapper)
                                 // important bc frontiers siloed by worker
-    //                            db.storeDocument(url, body, now, contentType);
 
                                 Map<String, String> metadata = new HashMap<>();
 
@@ -331,7 +320,7 @@ public class Worker extends Thread {
                                 master.increaseProcessedDocCount();
     //                            log.info(url + ": Downloading");
                                 if (docType.equals(HttpClient.HTML)) {
-                                    log.info("EXTRACTING LINKS FOR URL == " + url);
+                              //      log.info("EXTRACTING LINKS FOR URL == " + url);
                                     try {
                                         extractLinks(body, url);
                                     } catch (IOException e) {
@@ -345,11 +334,13 @@ public class Worker extends Thread {
                     }
                 }
             }
-        } catch (IOException e) {
-            log.error("Could not reach remote queue... terminating thread " + e.getMessage());
+//       } catch (IOException e) {
+//            log.error("Could not reach remote queue... terminating thread " + e.getMessage());
+//            e.printStackTrace();
 
         } catch (InterruptedException e) {
             log.error("Could not sleep... terminating thread " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -375,6 +366,7 @@ public class Worker extends Thread {
             return false;
         }
         for (String link : disallowed) {
+            if (link.length() == 0) continue;
             if ((link.endsWith("/") && url.contains(link) && !url.endsWith(link) && !allowedContains(url, allowed))
                     || (link.charAt(link.length() - 1) != '/' && url.endsWith(link))) {
                 return true;
@@ -439,38 +431,150 @@ public class Worker extends Thread {
      * @param url url to create path from
      */
     private void extractLinks(String html, String url) throws IOException {
-        InputStream htmlStream = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
-        Tidy tidy = new Tidy();
-        tidy.setShowWarnings(false);
-        tidy.setShowErrors(0);
-        tidy.setQuiet(true);
-        org.w3c.dom.Document doc = tidy.parseDOM(htmlStream, null);
-        NodeList anchors = doc.getElementsByTagName("a");
+//        InputStream htmlStream = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
+//        Tidy tidy = new Tidy();
+//        tidy.setShowWarnings(false);
+//        tidy.setShowErrors(0);
+//        tidy.setQuiet(true);
+//        org.w3c.dom.Document doc = tidy.parseDOM(htmlStream, null);
+//        NodeList anchors = doc.getElementsByTagName("a");
 
+        Set<String> anchors = extractLinks(html);
+
+//        log.info("Size of anchors is " + anchors.size());
+//        System.exit(0);
         if (this.frontier.size() == SyncMultQueue.MAX_QUEUE_SIZE) {
             throw new IOException("Worker id: "+ this.getID() +" Queue is full. Not saving links from URL = " + url);
         }
 
-        for (int i = 0; i < anchors.getLength(); i++) {
-            org.w3c.dom.Node n = anchors.item(i);
-            if (n.getAttributes() == null || n.getAttributes().getNamedItem("href") == null) {
-                continue;
-            }
-            String link = n.getAttributes().getNamedItem("href").getNodeValue();
+        Set<String> outgoingLinks = new HashSet<>();
+        for (String link : anchors) {
+//            org.w3c.dom.Node n = anchors.get(i);
+//            if (n.getAttributes() == null || n.getAttributes().getNamedItem("href") == null) {
+//                continue;
+//            }
+
+//            String link = n.getAttributes().getNamedItem("href").getNodeValue();
             if (link.startsWith("http")) {
                 // absolute link
-                this.frontier.enqueue(link);
-                log.info("Adding to queue: " + link);
+                handleLink(outgoingLinks, link);
+
             } else {
                 try {
                     URL base = new URL(url);
                     String absolute = new URL(base, link).toString();
-                    log.info("Adding to queue: " + absolute);
-                    this.frontier.enqueue(absolute);
+
+                    handleLink(outgoingLinks, absolute);
                 } catch (MalformedURLException e) {
                     log.error("Error turning a relative url into an absolute url");
                 }
             }
         }
+
+        // Save outgoing links to Dynamo and Frontier
+        batchSaveLinks(outgoingLinks, url);
     }
+
+    private void batchSaveLinks(Set<String> links, String url) throws IOException {
+        List<String> linksList = links.stream().collect(Collectors.toList());
+        DynamoWrapper.storeURLOutgoingLinks(url, linksList);
+        this.frontier.enqueue(linksList);
+    }
+
+    private Set<String> extractLinks(String rawHtml) {
+        Set<String> links = new HashSet<>();
+        String pattern = "<a.[^<]*href=[\"|\'](\\S+)[\"|\'].[^<]*</a>";
+        Pattern r = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+        Matcher m = r.matcher(rawHtml);
+
+        while (m.find()) {
+            links.add(m.group(1));
+        }
+        return links;
+    }
+
+    private void handleLink(Set<String> outgoingLinks, String url) throws IOException {
+        outgoingLinks.add(url);
+    }
+
+    String[] seeds = {"https://www.google.com/",
+            "https://www.facebook.com/",
+            "https://twitter.com/",
+            "https://www.youtube.com/",
+            "https://wordpress.org/",
+            "https://www.linkedin.com/",
+            "https://www.instagram.com/",
+            "https://www.pinterest.com/",
+            "https://www.wikipedia.org/",
+            "http://www.adobe.com/",
+            "https://www.blogger.com",
+            "http://www.rollingstones.com/",
+            "https://wordpress.com/",
+            "http://www.apple.com/",
+            "https://www.tumblr.com/",
+            "https://www.amazon.com/",
+            "https://vimeo.com/",
+            "https://www.yahoo.com/",
+            "https://www.microsoft.com/",
+            "http://www.nytimes.com/",
+            "http://www.bbc.com",
+            "https://soundcloud.com/",
+            "http://www.stumbleupon.com/",
+            "http://www.cnn.com/",
+            "https://github.com/",
+            "https://www.theguardian.com/us",
+            "http://www.imdb.com/",
+            "http://www.foodnetwork.com/",
+            "https://www.nih.gov/",
+            "http://www.forbes.com/",
+            "https://www.yelp.com/",
+            "http://www.wsj.com/",
+            "http://www.slideshare.net/",
+            "https://www.etsy.com/",
+            "http://www.ebay.com/",
+            "http://www.about.com/",
+            "http://www.aol.com/",
+            "https://www.eventbrite.com/",
+            "https://archive.org/",
+            "http://www.reuters.com/",
+            "http://www.telegraph.co.uk/",
+            "http://www.usatoday.com/",
+            "https://www.wikimedia.org/",
+            "http://www.bloomberg.com/",
+            "http://www.cdc.gov/",
+            "http://time.com/",
+            "https://www.meetup.com/",
+            "http://www.latimes.com/",
+            "http://www.harvard.edu/",
+            "http://www.npr.org/",
+            "https://www.tripadvisor.com/",
+            "http://bandcamp.com/",
+            "https://foursquare.com/",
+            "http://web.mit.edu/",
+            "https://www.wired.com/",
+            "https://www.nasa.gov/",
+            "http://www.economist.com/",
+            "https://www.kickstarter.com/",
+            "http://www.upenn.edu/",
+            "http://www.ted.com/",
+            "http://www.booking.com/",
+            "https://www.reddit.com/",
+            "http://www.businessinsider.com/",
+            "https://www.goodreads.com/",
+            "http://mashable.com/",
+            "http://www.nationalgeographic.com/",
+            "http://www.cbsnews.com/",
+            "https://www.whitehouse.gov/",
+            "https://www.spotify.com/us/",
+            "https://medium.com/",
+            "https://techcrunch.com/",
+            "https://www.buzzfeed.com/",
+            "https://www.theatlantic.com/",
+            "http://www.webmd.com/",
+            "https://www.trustpilot.com/",
+            "http://www.nature.com/",
+            "https://www.usa.gov/",
+            "http://www.clas.ufl.edu/au/",
+            "http://mlb.mlb.com/home",
+            "http://www.espn.com/"};
 }
