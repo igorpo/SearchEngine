@@ -21,15 +21,15 @@ public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Tex
 
 
     Table table;
-    int N;
+    long N;
     @Override
     public void configure(JobConf job){
 
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         DynamoDB dynamoDB = new DynamoDB(client);
 
-        table = dynamoDB.getTable("testcount");
-        N = Integer.parseInt(job.get("num"));
+        table = dynamoDB.getTable("bigtest1");
+        N = Long.parseLong(job.get("num"));
 
     }
 
@@ -43,7 +43,7 @@ public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Tex
         }
 
         int len = urls.size();
-        double idf = Math.log((double)N/(double)len);
+        double idf = Math.log10((double)N/(double)len);
 
         List<List<String>> full = new ArrayList<>();
 

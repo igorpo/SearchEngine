@@ -29,8 +29,7 @@ import static com.indexer.IndexerJob.bucketName;
 public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 
     private final static IntWritable one = new IntWritable(1);
-    private Text word = new Text();
-    private Text textUrl = new Text();
+
     private AmazonS3 s3;
     private String stopList = "stopList.txt";
     private Set<String> stopWords;
@@ -51,7 +50,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
                 InputStreamReader(stopDoc.getObjectContent()));
 
         String stopLine;
-        Set<String> stopWords = new HashSet<>();
+        stopWords = new HashSet<>();
         Stemmer stemmer = new Stemmer();
         String stemmedWord;
         try {
@@ -69,6 +68,8 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
     @Override
     public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+
+        /*
         String url = value.toString();
         if(url == null || url.equals("")) {
 //            word.set(url);
@@ -92,7 +93,13 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         }
 
+
         String document = Jsoup.parse(sb.toString()).text();
+        */
+
+        String url = ((FileSplit) reporter.getInputSplit()).getPath().getName();
+
+        String document = Jsoup.parse(value.toString()).text();
 
         System.err.println("URL: " + url + ",document: " + document);
 
@@ -115,21 +122,22 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         //find max
 
-        float max = -1;
+        int maxVal = -1;
         for (Map.Entry<String, Integer> e : tfs.entrySet()){
-            if (e.getValue() > max){
-                max = e.getValue();
+            if (e.getValue() > maxVal){
+                maxVal = e.getValue();
             }
         }
 
-
+        Text word = new Text();
+        Text textUrl = new Text();
         double tf;
         for (String w : tfs.keySet()){
             if(!stopWords.contains(w)) {
                 word.set(w);
-                textUrl.set(url);
+                //textUrl.set(url);
 
-                tf = .5 + .5 * (double) tfs.get(w) / (double) max;
+                tf = .5 + (.5 * (double) tfs.get(w) / maxVal);
                 textUrl.set(new Double(tf).toString() + "," + url);
                 output.collect(word, textUrl);
             }
