@@ -29,7 +29,7 @@ public class Crawler implements Messenger {
      * @param threadID thread ID that is terminated
      */
     public void terminate(String threadID) {
-        log.info("[" + threadID + "] terminated");
+        log.info(" ************************************************************** [" + threadID + "] terminated");
     }
 
     /**

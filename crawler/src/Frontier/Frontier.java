@@ -1,6 +1,7 @@
 package frontier;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by YagilB on 12/1/2016.
@@ -25,6 +26,13 @@ public interface Frontier {
      * @throws IOException
      */
     public void enqueue(String URL) throws IOException;
+
+    /**
+     * Provide a url to push to the queue
+     * @param linksList url to be pushed
+     * @throws IOException
+     */
+    public void enqueue(List<String> linksList) throws IOException;
 
     /**
      * Returns number of remaining URLs in worker's frontier queue
