@@ -80,7 +80,7 @@ public class Master {
     private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
 //    static final String DYNAMO_DB_NAME = "testing_urls";
 
-    private static final String LOG_PATH = "/logs/out.log";
+    private static final String LOG_PATH = "log.out";
 
     /**
      * The Master class controls the extended specified thread class
