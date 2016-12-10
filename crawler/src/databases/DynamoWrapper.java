@@ -34,18 +34,16 @@ public class DynamoWrapper {
      * automatically. Client parameters, such as proxies, can be specified in an
      * optional ClientConfiguration object when constructing a client.
      *
-     * @param tableName table we are initing
      * @see com.amazonaws.auth.BasicAWSCredentials
      * @see com.amazonaws.ClientConfiguration
      */
-    public static void init(String tableName) {
-        table = tableName;
+    public static void init() {
 
         // acquire long term credentials from the properties file
 
 //        longTermCredentials_ = new ProfileCredentialsProvider().getCredentials();
-
 //        dynamoClient = new AmazonDynamoDBClient(longTermCredentials_);
+
 
         // For EC2
         dynamoClient = new AmazonDynamoDBClient();
@@ -55,6 +53,15 @@ public class DynamoWrapper {
         // this is needed for it to know where to find our objects
         Region usWest2 = Region.getRegion(Regions.US_WEST_2);
         dynamoClient.setRegion(usWest2);
+    }
+
+    /**
+     * Use this convenience method in order to set table name when need to access
+     * different tables.
+     * @param tableName
+     */
+    public static void setTable(String tableName) {
+        table = tableName;
     }
 
     /**

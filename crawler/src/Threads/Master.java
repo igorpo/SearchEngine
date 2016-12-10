@@ -98,7 +98,8 @@ public class Master {
         crawlTimes = new ConcurrentHashMap<>();
         visitedUrls = new HashSet<>();
         S3Wrapper.init(BUCKET_NAME);
-        DynamoWrapper.init(DYNAMO_DB_NAME);
+        DynamoWrapper.init();
+        DynamoWrapper.setTable(DYNAMO_DB_NAME);
         FileLogger.init(LOG_PATH);
         try {
             initThreads();
