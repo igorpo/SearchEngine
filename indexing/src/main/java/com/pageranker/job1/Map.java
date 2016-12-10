@@ -37,6 +37,8 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
                     OutputCollector<Text, Text> output,
                     Reporter reporter) throws IOException {
         // Get the URL
+
+
         // Get the list of URLs
     }
 
