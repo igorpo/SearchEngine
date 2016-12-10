@@ -119,7 +119,7 @@ public class Worker extends Thread {
                     int trials = 0;
 
                     while (true) {
-                        log.info("Checking if queue is empty for workerID " + this.getID());
+//                        log.info("Checking if queue is empty for workerID " + this.getID());
                         try {
                             isEmpty = this.frontier.isEmpty();
                         } catch (IOException e) {

@@ -71,14 +71,14 @@ public class Master {
     /**
      * Bucket name for S3 db
      */
-    private static final String BUCKET_NAME = "cis-455";
-//    static final String BUCKET_NAME = "cis-455-test";
+//    private static final String BUCKET_NAME = "cis-455";
+    static final String BUCKET_NAME = "cis-455-2";
 
     /**
      * Dynamo table name for {url -> [outgoing link list]}
      */
-    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
-//    static final String DYNAMO_DB_NAME = "testing_urls";
+//    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+    static final String DYNAMO_DB_NAME = "testing_urls";
 
     private static final String LOG_PATH = "log.out";
 

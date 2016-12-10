@@ -13,7 +13,7 @@ public class CrawlerRunner {
     private static final Log log = LogFactory.getLog(CrawlerRunner.class);
 
     public static void main(String[] args) throws IOException {
-        int maxDocuments = 100000;
+        int maxDocuments = 1000;
         int maxThreads = 80;
 
         if (args.length == 1) {
