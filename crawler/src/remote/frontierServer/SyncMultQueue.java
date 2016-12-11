@@ -15,17 +15,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SyncMultQueue {
 
     public static final int MAX_QUEUE_SIZE = (int) Math.pow(2,15);
+    public static final double MAX_FILE_SIZE = Math.pow(2,30) * 1.5;
     private static final int QUEUE_SIZE = MAX_QUEUE_SIZE;// Integer.MAX_VALUE;
     private static final String QUEUES_PATH = System.getProperty("user.dir")+ "/queues/";
     private static Map<String, BlockingQueue<String>> subqueues = new HashMap<>();
+
+    // Dump to file related
     private static ConcurrentHashMap<String, Boolean> queueFull = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Integer> queueLastLine = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<String, Integer> queueCurrentFile = new ConcurrentHashMap<>();
 
-    // Dump to file related
     private static BufferedWriter d = null;
     private static String NL = "\n";
 
+    // Methods
     public static String poll(String threadID) {
         BlockingQueue<String> queue = subqueues.get(threadID);
         if (queue == null) {
@@ -130,9 +133,10 @@ public class SyncMultQueue {
         d = null;
 
         try {
-            // Check size of file. If exceeds 1GB, create new file
+            // Check size of file. If exceeds 1.5GB, create new file
+            // Assuming 2GB is max file size
             File queueFile = new File(path);
-            if (queueFile.exists() && queueFile.length() >= 30000/*Math.pow(2,30)*/) {
+            if (queueFile.exists() && queueFile.length() >= MAX_FILE_SIZE) {
                 curFile = incrementFileCount(threadID);
                 path = QUEUES_PATH + threadID +  "_" + curFile + ".queue";
                 System.out.println("QUEUE FILE SIZE FOR THREAD ID " + threadID + " EXCEEDED SIZE. CREATING NEW ONE");
