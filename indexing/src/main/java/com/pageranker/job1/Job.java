@@ -16,7 +16,7 @@ public class Job implements RunnableJob {
      * The name for the Amazon S3 Bucket which contains the input for this
      * map-reduce job.
      */
-    static final String inputBucketName = "crawlerOutputBucket";
+    static final String inputBucketName = "cis-455";
 
     /**
      * The name for the Amazon S3 Bucket which should be written to with the
@@ -53,5 +53,11 @@ public class Job implements RunnableJob {
         // Run the job.
         JobClient.runJob(conf);
     }
+
+    public static void main(String[] args) throws IOException {
+        Job job = new Job();
+        job.run("data/in", "data/ranking/iter00", "0");
+    }
+
 
 }

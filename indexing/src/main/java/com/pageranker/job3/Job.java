@@ -54,10 +54,4 @@ public class Job implements RunnableJob {
         // Run the job.
         JobClient.runJob(conf);
     }
-
-    public static void main(String[] args) throws IOException {
-        Job job = new Job();
-        job.run("data/in", "data/ranking/iter00", "0");
-    }
-
 }

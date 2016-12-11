@@ -13,6 +13,23 @@ import java.io.IOException;
 public class Job implements RunnableJob {
 
     /**
+     * The prefix used for marking an output value that indicates that the
+     * link has been crawled.
+     */
+    public static final String IS_CRAWLED_PREFIX = "*";
+
+    /**
+     * The prefix used for marking an output value that indicates the links
+     * which each url maps to.
+     */
+    public static final String LINKS_PREFIX = "-";
+
+    /**
+     * The dampening constant for the page rank job.
+     */
+    static final double PAGE_RANK_DAMPENING_CONST = 0.85;
+
+    /**
      * The name for the Amazon S3 Bucket which contains the input for this
      * map-reduce job.
      */

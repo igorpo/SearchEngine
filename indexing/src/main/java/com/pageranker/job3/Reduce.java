@@ -1,5 +1,6 @@
 package com.pageranker.job3;
 
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 
@@ -9,7 +10,7 @@ import java.util.Iterator;
 /**
  * Created by kierajmumick on 12/8/16.
  */
-public class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+public class Reduce extends MapReduceBase implements Reducer<FloatWritable, Text, FloatWritable, Text> {
 
     @Override
     public void configure(JobConf job) {
@@ -17,11 +18,13 @@ public class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, T
     }
 
     @Override
-    public void reduce(Text key,
+    public void reduce(FloatWritable key,
                        Iterator<Text> values,
-                       OutputCollector<Text, Text> output,
+                       OutputCollector<FloatWritable, Text> output,
                        Reporter reporter) throws IOException {
-
+        while (values.hasNext()) {
+            output.collect(key, values.next());
+        }
     }
 
 }
