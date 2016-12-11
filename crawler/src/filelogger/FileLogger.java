@@ -52,7 +52,7 @@ public class FileLogger {
         try {
             LOG_ROOT_LOCATION = path;
             // check if folder exists, if not - create it
-            d = new BufferedWriter(new FileWriter(LOG_ROOT_LOCATION));
+            d = new BufferedWriter(new FileWriter(System.getProperty("user.dir") + "/../logs/" + LOG_ROOT_LOCATION));
             d.write("Server log: " + getDateString() + NL + NL);
             d.flush();
         } catch (FileNotFoundException ex) {
