@@ -15,6 +15,20 @@ public class IndexerJob {
 
 
     public static void main(String[] args) throws Exception {
+
+//
+//        String roleArn = "arn:aws:iam::172510697573:role/Chris_S3";
+//        AWSSecurityTokenServiceClient sts = new AWSSecurityTokenServiceClient(
+//                new PropertiesCredentials(IndexerJob.class.getResourceAsStream("AwsCredentials.properties"))
+//        );
+//
+//        AssumeRoleRequest assumeRoleRequest = new AssumeRoleRequest()
+//                .withRoleArn(roleArn);
+//
+//        AssumeRoleResult ar = sts.assumeRole(assumeRoleRequest);
+
+
+
         JobConf conf = new JobConf(IndexerJob.class);
         conf.setJobName("wordcount");
 
@@ -37,6 +51,7 @@ public class IndexerJob {
                 Long.toString(FileSystem.get(conf).getContentSummary(new Path(args[0])).getFileCount()));
         */
         conf.set("num", args[2]);
+
 
 
         JobClient.runJob(conf);

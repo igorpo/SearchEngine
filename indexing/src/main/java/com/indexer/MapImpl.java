@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.indexer.IndexerJob.bucketName;
 
@@ -103,7 +104,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         System.err.println("URL: " + url + ",document: " + document);
 
-        String[] words = document.toLowerCase().split("[^\\p{Alnum}']+");
+        String[] words = document.toLowerCase().split("[^\\p{Alnum}]+");
 
         Stemmer stemmer = new Stemmer();
         //TODO: If running too slow, might want to get rid of stemming or extract to another for loop to stem only once
@@ -131,9 +132,13 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         Text word = new Text();
         Text textUrl = new Text();
+        Pattern p = Pattern.compile("[0-9]+");
         double tf;
         for (String w : tfs.keySet()){
             if(!stopWords.contains(w)) {
+                if (w.length() > 4 && p.matcher(w).matches()){
+                    continue;
+                }
                 word.set(w);
                 //textUrl.set(url);
 
