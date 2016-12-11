@@ -1,16 +1,13 @@
 package com.pageranker.job1;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.indexer.S3Wrapper;
+import com.pageranker.model.DynamoWrapper;
+import com.pageranker.model.S3Wrapper;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -29,8 +26,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
     @Override
     public void configure(JobConf job) {
         // Set up Amazon S3
-        S3Wrapper.init();
-        S3Wrapper.setTable("cis-455");
+        S3Wrapper.init("cis-455");
 
         // Set up Amazon DynamoDB
         DynamoWrapper.init();

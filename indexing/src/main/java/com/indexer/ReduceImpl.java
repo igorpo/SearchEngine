@@ -9,9 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by azw on 11/30/16.
@@ -37,7 +35,7 @@ public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Tex
     public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
 
 
-        ArrayList<Text> urls = new ArrayList<>();
+        Set<Text> urls = new HashSet<>();
         while (values.hasNext()) {
             urls.add(values.next());
         }
@@ -75,7 +73,7 @@ public class ReduceImpl extends MapReduceBase implements Reducer<Text, Text, Tex
             }
 
         }
-        output.collect(key, new Text(full.toString()));
+        //output.collect(key, new Text(full.toString()));
 
     }
 }

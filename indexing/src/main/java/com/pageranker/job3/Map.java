@@ -28,7 +28,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Flo
         int secondTabInx = pageWithRank.indexOf('\t', firstTabInx);
 
         String page = pageWithRank.substring(0, firstTabInx);
-        float rank = Float.parseFloat(pageWithRank.substring(page, secondTabInx).trim());
+        float rank = Float.parseFloat(pageWithRank.substring(firstTabInx, secondTabInx).trim());
 
         output.collect(new FloatWritable(rank), new Text(page));
     }

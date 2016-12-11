@@ -11,6 +11,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -100,9 +101,20 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 
         String url = ((FileSplit) reporter.getInputSplit()).getPath().getName();
 
-        String document = Jsoup.parse(value.toString()).text();
-
-        System.err.println("URL: " + url + ",document: " + document);
+        Document test = Jsoup.parse(value.toString());
+        if (test == null){
+            return;
+        }
+        test.select("script,jscript,style").remove();
+        String document;
+        if (test.body() != null) {
+            document = test.body().text();
+        } else {
+            return;
+        }
+        if (test.head() != null) {
+            document += test.head().text();
+        }
 
         String[] words = document.toLowerCase().split("[^\\p{Alnum}]+");
 
@@ -133,10 +145,12 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
         Text word = new Text();
         Text textUrl = new Text();
         Pattern p = Pattern.compile("[0-9]+");
+        Pattern p2 = Pattern.compile("[0-9]+[\\p{Alnum}]+]");
+        Pattern p3 = Pattern.compile("[\\p{Alpha}]+[0-9][\\p{Alnum}]");
         double tf;
         for (String w : tfs.keySet()){
             if(!stopWords.contains(w)) {
-                if (w.length() > 4 && p.matcher(w).matches()){
+                if (w.length() > 4 && (p.matcher(w).matches() || p2.matcher(w).matches() || p3.matcher(w).matches())){
                     continue;
                 }
                 word.set(w);
