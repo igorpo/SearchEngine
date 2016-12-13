@@ -1,9 +1,14 @@
 package com.indexer;
 
-import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapreduce.*;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 
 public class IndexerJob {
@@ -28,11 +33,13 @@ public class IndexerJob {
 //        AssumeRoleResult ar = sts.assumeRole(assumeRoleRequest);
 
 
-
-        JobConf conf = new JobConf(IndexerJob.class);
+        Configuration c = new Configuration();
+        c.set("num", args[2]);
+        Job conf = Job.getInstance(c,"wordcount");
         conf.setJobName("wordcount");
 
 
+        conf.setJarByClass(IndexerJob.class);
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
 
@@ -40,8 +47,8 @@ public class IndexerJob {
         //conf.setCombinerClass(ReduceImpl.class);
         conf.setReducerClass(ReduceImpl.class);
 
-        conf.setInputFormat(NoSplitter.class);
-        conf.setOutputFormat(TextOutputFormat.class);
+        conf.setInputFormatClass(NoSplitter.class);
+        conf.setOutputFormatClass(TextOutputFormat.class);
 
         FileInputFormat.setInputPaths(conf, new Path(args[0]));
         FileOutputFormat.setOutputPath(conf, new Path(args[1]));
@@ -50,20 +57,26 @@ public class IndexerJob {
         conf.set("num",
                 Long.toString(FileSystem.get(conf).getContentSummary(new Path(args[0])).getFileCount()));
         */
-        conf.set("num", args[2]);
+        //conf.set("num", args[2]);
 
 
 
-        JobClient.runJob(conf);
+        conf.waitForCompletion(true);
 
 
     }
 
     public static class NoSplitter extends TextInputFormat {
 
+
         @Override
-        public boolean isSplitable(FileSystem fs, Path file){
+        public boolean isSplitable(JobContext a, Path file){
             return false;
+        }
+
+        @Override
+        public RecordReader<LongWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context){
+            
         }
     }
 }

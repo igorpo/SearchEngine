@@ -9,18 +9,16 @@ import com.amazonaws.services.s3.model.S3Object;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import static com.indexer.IndexerJob.bucketName;
 
@@ -28,7 +26,7 @@ import static com.indexer.IndexerJob.bucketName;
  * Created by azw on 11/30/16.
  * index + ifidf mapper
  */
-public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
 
     private final static IntWritable one = new IntWritable(1);
 
@@ -37,7 +35,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
     private Set<String> stopWords;
 
     @Override
-    public void configure(JobConf job){
+    public void setup(Context context){
         s3 = new AmazonS3Client();
         Region reg = Region.getRegion(Regions.US_EAST_1);
         s3.setRegion(reg);
@@ -69,7 +67,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
     }
 
     @Override
-    public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+    public void map(LongWritable key, Text value, Context c) throws IOException, InterruptedException {
 
         /*
         String url = value.toString();
@@ -99,7 +97,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
         String document = Jsoup.parse(sb.toString()).text();
         */
 
-        String url = ((FileSplit) reporter.getInputSplit()).getPath().getName();
+        String url = ((FileSplit) c.getInputSplit()).getPath().getName();
 
         Document test = Jsoup.parse(value.toString());
         if (test == null){
@@ -115,14 +113,20 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
         if (test.head() != null) {
             document += test.head().text();
         }
+        Text word = new Text();
+        Text textUrl = new Text();
+        word.set(url);
+        textUrl.set(value.toString());
+        c.write(word, textUrl);
 
-        String[] words = document.toLowerCase().split("[^\\p{Alnum}]+");
+        /*
+        String[] words = document.toLowerCase().split("\\W+");
 
-        Stemmer stemmer = new Stemmer();
         //TODO: If running too slow, might want to get rid of stemming or extract to another for loop to stem only once
         Map<String, Integer> tfs = new HashMap<>();
         String stemmedWord;
         for (String w : words){
+            Stemmer stemmer = new Stemmer();
             stemmer.add(w.toCharArray(), w.length());
             stemmer.stem();
             stemmedWord = stemmer.toString();
@@ -146,7 +150,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
         Text textUrl = new Text();
         Pattern p = Pattern.compile("[0-9]+");
         Pattern p2 = Pattern.compile("[0-9]+[\\p{Alnum}]+]");
-        Pattern p3 = Pattern.compile("[\\p{Alpha}]+[0-9][\\p{Alnum}]");
+        Pattern p3 = Pattern.compile("[\\p{Alpha}]+[0-9]\\p{Alnum}]+");
         double tf;
         for (String w : tfs.keySet()){
             if(!stopWords.contains(w)) {
@@ -171,7 +175,7 @@ public class MapImpl extends MapReduceBase implements Mapper<LongWritable, Text,
 //            word.set(tokenizer.nextToken());
 //            output.collect(word, one);
 //        }
-
+*/
 
 
     }
