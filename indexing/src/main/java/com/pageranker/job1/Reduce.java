@@ -1,10 +1,9 @@
 package com.pageranker.job1;
 
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * Reduces the output of the Map class to be of the format
@@ -14,34 +13,33 @@ import java.util.Iterator;
  * This therefore maps each url to be initialized with a page rank of 1
  * and also to
  */
-public class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+public class Reduce extends Reducer<Text, Text, Text, Text> {
 
     @Override
-    public void configure(JobConf job) {
+    public void setup(Context c) {
 
     }
 
     @Override
     public void reduce(Text key,
-                       Iterator<Text> values,
-                       OutputCollector<Text, Text> output,
-                       Reporter reporter) throws IOException {
+                       Iterable<Text> values,
+                       Context c) throws IOException, InterruptedException {
         StringBuilder sb = new StringBuilder();
 
         sb.append("1.0\t");
 
         boolean first = false;
-        while (values.hasNext()) {
+        for (Text t : values) {
             if (!first) {
                 sb.append(",");
                 first = true;
             }
 
-            sb.append(values.next().toString());
+            sb.append(t.toString());
         }
 
         // TODO: Gus & Chris - Make this work by putting output to S3/Dynamo/Whatever works
-        output.collect(key, new Text(sb.toString()));
+        c.write(key, new Text(sb.toString()));
     }
 
 }

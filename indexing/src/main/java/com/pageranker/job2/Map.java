@@ -33,7 +33,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
                            .trim();
 
         // Mark the page as  existing from our crawler.
-        output.collect(new Text(page), new Text(Job.IS_CRAWLED_PREFIX));
+        output.collect(new Text(page), new Text(PageJob.IS_CRAWLED_PREFIX));
 
         if (tabAfterRankInx == -1) { return; }
 
@@ -55,7 +55,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         }
 
         // Save the information regarding which pages were linked to what.
-        output.collect(new Text(page), new Text(Job.LINKS_PREFIX + links));
+        output.collect(new Text(page), new Text(PageJob.LINKS_PREFIX + links));
 
         // At the end of this job, the reducer will then have an input which
         // maps a page to whether or not that page exists ("*" prefix), the pages that

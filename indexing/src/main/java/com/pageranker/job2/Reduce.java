@@ -34,10 +34,10 @@ public class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, T
             String val = values.next().toString();
 
             // Make sure that the |url| is crawled.
-            if (val.equals(Job.IS_CRAWLED_PREFIX)) { isCrawled = true; }
+            if (val.equals(PageJob.IS_CRAWLED_PREFIX)) { isCrawled = true; }
 
             // Remember all of the previous links that were linked to by this URL.
-            else if (val.substring(0, 1).equals(Job.LINKS_PREFIX)) { links = val.substring(1); }
+            else if (val.substring(0, 1).equals(PageJob.LINKS_PREFIX)) { links = val.substring(1); }
 
             // Update the page rank sum for this URL.
             else {
@@ -55,7 +55,7 @@ public class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, T
         if (!isCrawled) { return; }
 
         // Update the page rank.
-        double newPageRank = Job.PAGE_RANK_DAMPENING_CONST * pageRankSum + (1 - Job.PAGE_RANK_DAMPENING_CONST);
+        double newPageRank = PageJob.PAGE_RANK_DAMPENING_CONST * pageRankSum + (1 - PageJob.PAGE_RANK_DAMPENING_CONST);
 
         // Output the new page rank.
         output.collect(url, new Text("" + newPageRank + "\t" + links));
