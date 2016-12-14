@@ -17,8 +17,11 @@ import org.jsoup.nodes.Document;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.indexer.IndexerJob.bucketName;
 
@@ -113,13 +116,13 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         if (test.head() != null) {
             document += test.head().text();
         }
-        Text word = new Text();
-        Text textUrl = new Text();
-        word.set(url);
-        textUrl.set(value.toString());
-        c.write(word, textUrl);
+        //Text word = new Text();
+        //Text textUrl = new Text();
+        //word.set(url);
+        //textUrl.set(value.toString());
+        //c.write(word, textUrl);
 
-        /*
+
         String[] words = document.toLowerCase().split("\\W+");
 
         //TODO: If running too slow, might want to get rid of stemming or extract to another for loop to stem only once
@@ -162,7 +165,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
 
                 tf = .5 + (.5 * (double) tfs.get(w) / maxVal);
                 textUrl.set(new Double(tf).toString() + "," + url);
-                output.collect(word, textUrl);
+                c.write(word, textUrl);
             }
         }
 
@@ -175,7 +178,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
 //            word.set(tokenizer.nextToken());
 //            output.collect(word, one);
 //        }
-*/
+
 
 
     }

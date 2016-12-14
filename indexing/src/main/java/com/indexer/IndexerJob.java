@@ -1,14 +1,21 @@
 package com.indexer;
 
+import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.util.LineReader;
+
+import java.io.IOException;
 
 
 public class IndexerJob {
@@ -75,8 +82,101 @@ public class IndexerJob {
         }
 
         @Override
-        public RecordReader<LongWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context){
-            
+        public RecordReader<LongWritable, Text> createRecordReader(
+                InputSplit split, TaskAttemptContext context){
+            return new CustomLineRecordReader();
         }
+    }
+
+    public static class CustomLineRecordReader
+            extends RecordReader<LongWritable, Text> {
+
+        private long start;
+        private long pos;
+        private long end;
+        private LineReader in;
+        private int maxLineLength;
+        private LongWritable key = new LongWritable();
+        private Text value = new Text();
+
+        @Override
+        public void initialize(InputSplit genericSplit, TaskAttemptContext context) throws IOException {
+
+            FileSplit split = (FileSplit) genericSplit;
+            final Path file = split.getPath();
+
+            Configuration job = context.getConfiguration();
+            this.maxLineLength = job.getInt("mapred.linerecordreader.maxlength", Integer.MAX_VALUE);
+
+            start = split.getStart();
+            end = start + split.getLength();
+
+            FileSystem fs = file.getFileSystem(job);
+            FSDataInputStream fileIn = fs.open(split.getPath());
+
+            in = new LineReader(fileIn, job);
+
+            // Position is the actual start
+            this.pos = start;
+        }
+
+
+        @Override
+        public boolean nextKeyValue() throws IOException {
+            // Current offset is the key
+            key.set(pos);
+
+            int newSize = 0;
+            String temp = "";
+            while (pos < end) {
+                newSize = in.readLine(value, maxLineLength,
+                        Math.max((int) Math.min(
+                                Integer.MAX_VALUE, end - pos),
+                                maxLineLength));
+
+                if (newSize == 0) {
+                    break;
+                }
+                pos += newSize;
+                temp = temp + value.toString();
+            }
+            value.set(temp);
+
+            if (newSize == 0) {
+                key = null;
+                value = null;
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        @Override
+        public LongWritable getCurrentKey() throws IOException,
+                InterruptedException {
+            return key;
+        }
+
+        @Override
+        public Text getCurrentValue() throws IOException, InterruptedException {
+            return value;
+        }
+
+        @Override
+        public float getProgress() throws IOException, InterruptedException {
+            if (start == end) {
+                return 0.0f;
+            } else {
+                return Math.min(1.0f, (pos - start) / (float) (end - start));
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (in != null) {
+                in.close();
+            }
+        }
+
     }
 }

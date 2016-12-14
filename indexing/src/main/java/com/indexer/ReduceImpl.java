@@ -9,7 +9,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -38,12 +40,12 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 
 
         Set<Text> urls = new HashSet<>();
-        Text url = new Text();
+        //Text url = new Text();
         for (Text t : values) {
-            //urls.add(values.next());
-            c.write(key, t);
+            urls.add(t);
+            //c.write(key, t);
         }
-/*
+
         int len = urls.size();
         double idf = Math.log10((double)N/(double)len);
 
@@ -61,14 +63,14 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
             full.add(thing);
 
         }
-*/
+
 
 
         if (key != null && !key.toString().isEmpty()){
             try {
                 System.out.println("Adding a new item...");
                 PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString())
-                        .withString("data", url.toString()));
+                        .withList("data", full));
 
                 System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
 
