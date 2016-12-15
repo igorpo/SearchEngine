@@ -13,28 +13,34 @@ public class CrawlerRunner {
     private static final Log log = LogFactory.getLog(CrawlerRunner.class);
 
     public static void main(String[] args) throws IOException {
-        int maxDocuments = 1000;
-        int maxThreads = 80;
+        int maxDocuments = 300000;
+        int maxThreads = 60;
+        int nodeIndex = -1;
+
+//        if (args.length == 1) {
+//            try {
+//                maxThreads = Integer.parseInt(args[1]);
+//            } catch (NumberFormatException e) {
+//                log.error("Malformed argument for number of threads: " + e.getMessage());
+//                return;
+//            }
+//        }
+//
+//        if (args.length == 2) {
+//            try {
+//                maxDocuments = Integer.parseInt(args[2]);
+//            } catch (NumberFormatException e) {
+//                log.error("Malformed argument for number of documents: " + e.getMessage());
+//                return;
+//            }
+//        }
 
         if (args.length == 1) {
-            try {
-                maxThreads = Integer.parseInt(args[1]);
-            } catch (NumberFormatException e) {
-                log.error("Malformed argument for number of threads: " + e.getMessage());
-                return;
-            }
+            nodeIndex = Integer.parseInt(args[0]);
+            log.info("Starting node index " + nodeIndex);
         }
 
-        if (args.length == 2) {
-            try {
-                maxDocuments = Integer.parseInt(args[2]);
-            } catch (NumberFormatException e) {
-                log.error("Malformed argument for number of documents: " + e.getMessage());
-                return;
-            }
-        }
-
-        if (args.length >= 3) {
+        if (args.length >= 2) {
             log.info("Usage is [maxThreads maxDocs]\nDefault is 8 threads and unlimited documents");
             return;
         }
@@ -42,6 +48,6 @@ public class CrawlerRunner {
         log.info("Initializing the crawler with whitelisted seed(s) with maximum number of " + maxThreads + " threads " +
                 "and searching for " + ((maxDocuments != -1) ? maxDocuments : "unlimited") + " documents.");
 
-        Crawler crawler = new Crawler(maxThreads, maxDocuments);
+        Crawler crawler = new Crawler(maxThreads, maxDocuments, nodeIndex);
     }
 }

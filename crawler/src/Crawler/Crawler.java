@@ -20,8 +20,8 @@ public class Crawler implements Messenger {
      * @param maxThreads maximum number of threads
      * @param maxDocuments maximum number of documents
      */
-    public Crawler(int maxThreads, int maxDocuments) {
-        this.master = new Master(maxThreads, maxDocuments, this);
+    public Crawler(int maxThreads, int maxDocuments, int nodeIndex) {
+        this.master = new Master(maxThreads, maxDocuments, nodeIndex, this);
     }
 
     /**
