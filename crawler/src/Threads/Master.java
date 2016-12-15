@@ -72,16 +72,17 @@ public class Master {
      * Bucket name for S3 db
      */
 //    private static final String BUCKET_NAME = "cis-455";
-    static final String BUCKET_NAME = "cis-455-2";
+    static final String BUCKET_NAME = "cis-455-final";
 
     /**
      * Dynamo table name for {url -> [outgoing link list]}
      */
-//    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
-    static final String DYNAMO_DB_NAME = "testing_urls";
+    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+//    static final String DYNAMO_DB_NAME = "testing_urls";
 
     private static final String LOG_PATH = "log.out";
 
+    public static int nodeIndex = -1;
     /**
      * The Master class controls the extended specified thread class
      * that will be provided.
@@ -89,10 +90,11 @@ public class Master {
      * @param maxDocuments Max number of documents to be crawled
      *                     If -1, then we keep going forever
      */
-    public Master(int maxThreads, int maxDocuments, Messenger msgr) {
+    public Master(int maxThreads, int maxDocuments, int nodeIndex, Messenger msgr) {
         this.maxThreads = maxThreads;
         this.msgr = msgr;
         this.maxDocuments = maxDocuments;
+        this.nodeIndex = nodeIndex;
         this.currentNumThreads = this.currentNumDocumentsProcessed = 0;
         robotsForUrl = new ConcurrentHashMap<>();
         crawlTimes = new ConcurrentHashMap<>();
