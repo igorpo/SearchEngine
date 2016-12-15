@@ -34,8 +34,8 @@ public class Worker extends Thread {
     private static final String IS_WWW_REQUIRED = "#www-required";
     private static final String BAD = "http://null:0null";
     private static final Log log = LogFactory.getLog(Worker.class);
-    private static final int MAX_TRIES = 10;
-    private static final int WAIT_TIME = 1;
+    private static final int MAX_TRIES = 15;
+    private static final int WAIT_TIME = 5;
     /**
      * Set the id of the thread
      * @param id id generated for this thread
@@ -86,7 +86,21 @@ public class Worker extends Thread {
         Frontier frontier = new FrontierWrapper();
         frontier.init(getID());
         log.info("INIT FRONTIER WITH ID == " + getID());
-        frontier.enqueue(seeds[Integer.parseInt(getID())]);
+        switch (master.nodeIndex) {
+            case 0:
+                frontier.enqueue(seeds0[Integer.parseInt(getID())]);
+                break;
+            case 1:
+                frontier.enqueue(seeds1[Integer.parseInt(getID())]);
+                break;
+            case 2:
+                frontier.enqueue(seeds2[Integer.parseInt(getID())]);
+                break;
+            default:
+                log.error("No node index given, exiting...");
+                System.exit(-1);
+        }
+
         setFrontier(frontier);
         setMaster(master);
         setMessenger(msgr);
@@ -110,7 +124,7 @@ public class Worker extends Thread {
                 try {
                     isEmpty = this.frontier.isEmpty();
                 } catch (IOException e) {
-                    Thread.sleep(10000);
+                    Thread.sleep(15000);
                     log.info("Thread " + getID() + " is sleeping because: " + e.getMessage());
                     continue;
                 }
@@ -497,7 +511,7 @@ public class Worker extends Thread {
         outgoingLinks.add(url);
     }
 
-    String[] seeds = {"https://www.google.com/",
+    String[] seeds0 = {"https://www.google.com/",
             "https://www.facebook.com/",
             "https://twitter.com/",
             "https://www.youtube.com/",
@@ -505,7 +519,7 @@ public class Worker extends Thread {
             "https://www.linkedin.com/",
             "https://www.instagram.com/",
             "https://www.pinterest.com/",
-            "https://www.wikipedia.org/",
+            "https://www.skyscanner.com",
             "http://www.adobe.com/",
             "https://www.blogger.com",
             "http://www.rollingstones.com/",
@@ -520,9 +534,9 @@ public class Worker extends Thread {
             "http://www.bbc.com",
             "https://soundcloud.com/",
             "http://www.stumbleupon.com/",
-            "http://www.cnn.com/",
+            "http://www.ticketmaster.com/",
             "https://github.com/",
-            "https://www.theguardian.com/us",
+            "https://www.google.com/flights/",
             "http://www.imdb.com/",
             "http://www.foodnetwork.com/",
             "https://www.nih.gov/",
@@ -555,9 +569,69 @@ public class Worker extends Thread {
             "https://www.nasa.gov/",
             "http://www.economist.com/",
             "https://www.kickstarter.com/",
-            "http://www.upenn.edu/",
-            "http://www.ted.com/",
-            "http://www.booking.com/",
+            "http://www.upenn.edu/"};
+
+    String[] seeds1 = {"http://www.cnn.com/",
+            "http://www.nytimes.com/",
+            "https://www.theguardian.com/",
+            "http://www.huffingtonpost.com/",
+            "https://www.yahoo.com/news/",
+            "http://www.forbes.com/",
+            "http://www.foxnews.com/",
+            "www.bbc.co.uk",
+            "https://weather.com/",
+            "https://news.google.com/",
+            "https://www.bloomberg.com",
+            "http://www.wsj.com/",
+            "www.usatoday.com",
+            "http://time.com/",
+            "http://www.cbsnews.com/",
+            "http://www.nbcnews.com/",
+            "https://www.netflix.com",
+            "https://www.theatlantic.com/",
+            "https://en.wikipedia.org/wiki/Main_Page",
+            "http://fortune.com/",
+            "https://news.ycombinator.com/",
+            "http://www.theverge.com/",
+            "http://www.recode.net/",
+            "http://www.vox.com/",
+            "http://money.cnn.com/",
+            "http://genius.com/",
+            "http://www.investopedia.com/",
+            "http://stackoverflow.com/",
+            "https://www.hbonow.com/",
+            "http://www.politico.com/",
+            "http://fivethirtyeight.com/",
+            "http://www.visitphilly.com/",
+            "http://www.sas.upenn.edu/frd/faculty/index",
+            "https://www.khanacademy.org/",
+            "https://vimeo.com/",
+            "http://www.zillow.com/",
+            "https://www.redfin.com/",
+            "https://www.glassdoor.com/index.htm",
+            "https://www.etsy.com/",
+            "http://www.epicurious.com/",
+            "http://www.azworldairports.com/indexes/p-apnma.cfm",
+            "https://www.priceline.com/",
+            "https://www.kayak.com/",
+            "http://www.nasdaq.com/",
+            "https://www.nyse.com/index",
+            "http://www.pandora.com/",
+            "http://www.hulu.com/",
+            "http://www.alexa.com/",
+            "https://www.dropbox.com/",
+            "https://snapchat.com/",
+            "http://www.indeed.com/",
+            "http://www.craigslist.org/about/sites",
+            "https://www.gilt.com/",
+            "http://www.refinery29.com/",
+            "https://www.walmart.com/",
+            "http://us.asos.com/",
+            "http://www.hm.com/",
+            "http://www.zappos.com/",
+            "http://www.espn.com/"};
+
+    String[] seeds2 = {"http://www.booking.com/",
             "https://www.reddit.com/",
             "http://www.businessinsider.com/",
             "https://www.goodreads.com/",
@@ -569,12 +643,51 @@ public class Worker extends Thread {
             "https://medium.com/",
             "https://techcrunch.com/",
             "https://www.buzzfeed.com/",
-            "https://www.theatlantic.com/",
+            "https://www.ahd.com/",
             "http://www.webmd.com/",
             "https://www.trustpilot.com/",
             "http://www.nature.com/",
             "https://www.usa.gov/",
             "http://www.clas.ufl.edu/au/",
-            "http://mlb.mlb.com/home",
-            "http://www.espn.com/"};
+            "https://www.nhl.com/",
+            "http://www.eurosport.com/",
+            "https://www.quora.com/",
+            "http://stackexchange.com/",
+            "https://www.bankofamerica.com/",
+            "https://www.rottentomatoes.com/",
+            "http://www.ikea.com/us/en/",
+            "http://www.fandango.com/movie-reviews",
+            "https://www.wolframalpha.com/",
+            "https://itunes.apple.com/us/genre/ios",
+            "https://www.eventbrite.com/",
+            "https://news.ycombinator.com/best",
+            "https://www.producthunt.com/",
+            "http://www.memes.com/",
+            "http://knowyourmeme.com/",
+            "https://www.merriam-webster.com/",
+            "http://www.metmuseum.org/",
+            "http://www.lonelyplanet.com/",
+            "http://www.louvre.fr/en",
+            "http://www.whitepages.com/",
+            "http://www.wsop.com/",
+            "https://www.collegeboard.org/",
+            "http://www.nationalgeographic.com/",
+            "https://www.scientificamerican.com",
+            "http://www.apartments.com/",
+            "https://www.hotels.com/",
+            "https://www.twitch.tv/",
+            "https://theintercept.com/",
+            "https://play.google.com/store",
+            "https://www.python.org/",
+            "https://developer.apple.com/reference/",
+            "https://developers.google.com/",
+            "https://docs.oracle.com/javase/7/docs/api/",
+            "http://devdocs.io/",
+            "https://www.kernel.org/doc/man-pages/",
+            "https://www.gutenberg.org/",
+            "https://linux.die.net/man/",
+            "https://www.apache.org/",
+            "https://www.grubhub.com",
+            "http://www.ted.com/",
+            "http://mlb.mlb.com/home"};
 }
