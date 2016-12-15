@@ -62,25 +62,39 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
             full.get(count).add(url);
             full.get(count).add(new Double(tf*idf).toString());
             count++;
+            if (key != null && !key.toString().isEmpty()){
+                try {
+                    System.out.println("Adding a new item...");
+                    PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()
+                            +Integer.toString(count))
+                            .withList("data", full));
 
-        }
+                    System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
 
+                } catch (Exception e) {
+                    System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
+                    System.err.println(e.getMessage());
+                }
 
-
-        if (key != null && !key.toString().isEmpty()){
-            try {
-                System.out.println("Adding a new item...");
-                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString())
-                        .withList("data", full));
-
-                System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
-
-            } catch (Exception e) {
-                System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
-                System.err.println(e.getMessage());
             }
-
         }
+
+
+
+//        if (key != null && !key.toString().isEmpty()){
+//            try {
+//                System.out.println("Adding a new item...");
+//                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString())
+//                        .withList("data", full));
+//
+//                System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
+//
+//            } catch (Exception e) {
+//                System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
+//                System.err.println(e.getMessage());
+//            }
+//
+//        }
         //output.collect(key, new Text(full.toString()));
 
     }
