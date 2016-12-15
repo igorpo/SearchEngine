@@ -37,3 +37,4 @@ test.jar
 servlet/lib/
 indexing/lib/
 pom.xml
+*.jar
