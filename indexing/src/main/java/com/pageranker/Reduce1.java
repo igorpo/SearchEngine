@@ -1,4 +1,4 @@
-package com.pageranker.job1;
+package com.pageranker;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -13,7 +13,7 @@ import java.io.IOException;
  * This therefore maps each url to be initialized with a page rank of 1
  * and also to
  */
-public class Reduce extends Reducer<Text, Text, Text, Text> {
+public class Reduce1 extends Reducer<Text, Text, Text, Text> {
 
     @Override
     public void setup(Context c) {

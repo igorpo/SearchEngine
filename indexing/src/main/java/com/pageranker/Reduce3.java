@@ -1,4 +1,4 @@
-package com.pageranker.job3;
+package com.pageranker;
 
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
@@ -10,7 +10,7 @@ import java.util.Iterator;
 /**
  * Created by kierajmumick on 12/8/16.
  */
-public class Reduce extends MapReduceBase implements Reducer<FloatWritable, Text, FloatWritable, Text> {
+public class Reduce3 extends MapReduceBase implements Reducer<FloatWritable, Text, FloatWritable, Text> {
 
     @Override
     public void configure(JobConf job) {

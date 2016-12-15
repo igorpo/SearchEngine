@@ -153,7 +153,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         Text textUrl = new Text();
         Pattern p = Pattern.compile("[0-9]+");
         Pattern p2 = Pattern.compile("[0-9]+[\\p{Alnum}]+]");
-        Pattern p3 = Pattern.compile("[\\p{Alpha}]+[0-9]\\p{Alnum}]+");
+        Pattern p3 = Pattern.compile("[\\p{Alpha}]+[0-9]\\p{Alnum}]*");
         double tf;
         for (String w : tfs.keySet()){
             if(!stopWords.contains(w)) {

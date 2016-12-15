@@ -1,8 +1,6 @@
-package com.pageranker.job1;
+package com.pageranker;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.pageranker.model.DynamoWrapper;
-import com.pageranker.model.S3Wrapper;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -20,7 +18,7 @@ import java.util.List;
  * It will then ignor the value element from the S3 Table, and read from
  * DynamoDB to get the list of urls that the url maps to.
  */
-public class Map extends Mapper<LongWritable, Text, Text, Text> {
+public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
 
     private AmazonS3 s3;
 

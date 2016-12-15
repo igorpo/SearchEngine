@@ -1,4 +1,4 @@
-package com.pageranker.model;
+package com.pageranker;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -128,7 +128,10 @@ public class DynamoWrapper {
         Table t = dynamoDB.getTable(table);
         Item item = t.getItem("url", safeKey);
         if (item != null) {
-            results.addAll(((Set<String>) item.get("outgoingLinks")));
+            Set<String> s = item.getStringSet("outgoingLinks");
+            if (s != null) {
+                results.addAll(s);
+            }
         }
         return results;
     }

@@ -1,5 +1,6 @@
-package com.pageranker.job2;
+package com.pageranker;
 
+import com.pageranker.job3.PageJob;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
@@ -9,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by kierajmumick on 12/8/16.
  */
-public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+public class Map2 extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 
     @Override
     public void configure(JobConf job) {
@@ -33,7 +34,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
                            .trim();
 
         // Mark the page as  existing from our crawler.
-        output.collect(new Text(page), new Text(PageJob.IS_CRAWLED_PREFIX));
+        output.collect(new Text(page), new Text(PageJob2.IS_CRAWLED_PREFIX));
 
         if (tabAfterRankInx == -1) { return; }
 
@@ -55,7 +56,7 @@ public class Map extends MapReduceBase implements Mapper<LongWritable, Text, Tex
         }
 
         // Save the information regarding which pages were linked to what.
-        output.collect(new Text(page), new Text(PageJob.LINKS_PREFIX + links));
+        output.collect(new Text(page), new Text(PageJob2.LINKS_PREFIX + links));
 
         // At the end of this job, the reducer will then have an input which
         // maps a page to whether or not that page exists ("*" prefix), the pages that

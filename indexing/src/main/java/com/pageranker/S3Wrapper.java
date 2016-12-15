@@ -1,4 +1,4 @@
-package com.pageranker.model;
+package com.pageranker;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;

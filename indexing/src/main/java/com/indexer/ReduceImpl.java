@@ -30,7 +30,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         DynamoDB dynamoDB = new DynamoDB(client);
 
-        table = dynamoDB.getTable("smalltest1");
+        table = dynamoDB.getTable("smalltest2");
         N = Long.parseLong(c.getConfiguration().get("num"));
 
     }
@@ -51,16 +51,17 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 
         List<List<String>> full = new ArrayList<>();
 
-
+        List<String> pair;
+        int count = 0;
         for (Text o : urls) {
-            List<String> thing = new ArrayList<>();
+            full.add(new ArrayList<>());
 
             String[] stuff = o.toString().split(",", 2);
             String url = stuff[1];
             double tf = Double.parseDouble(stuff[0]);
-            thing.add(url);
-            thing.add(new Double(tf*idf).toString());
-            full.add(thing);
+            full.get(count).add(url);
+            full.get(count).add(new Double(tf*idf).toString());
+            count++;
 
         }
 

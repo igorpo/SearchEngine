@@ -1,4 +1,4 @@
-package com.pageranker.job3;
+package com.pageranker;
 
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by kierajmumick on 12/8/16.
  */
-public class Map extends MapReduceBase implements Mapper<LongWritable, Text, FloatWritable, Text> {
+public class Map3 extends MapReduceBase implements Mapper<LongWritable, Text, FloatWritable, Text> {
 
     @Override
     public void configure(JobConf job) {

@@ -1,6 +1,5 @@
-package com.pageranker.job1;
+package com.pageranker;
 
-import com.pageranker.RunnableJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -21,7 +20,7 @@ import java.io.IOException;
 /**
  * Created by kierajmumick on 12/8/16.
  */
-public class PageJob implements RunnableJob {
+public class PageJob1 implements RunnableJob {
 
     /**
      * The name for the Amazon S3 Bucket which contains the input for this
@@ -46,13 +45,13 @@ public class PageJob implements RunnableJob {
         conf.setJobName("pageRank1");
 
 
-        conf.setJarByClass(Job.class);
+        conf.setJarByClass(PageJob1.class);
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
 
-        conf.setMapperClass(Map.class);
+        conf.setMapperClass(Map1.class);
         //conf.setCombinerClass(ReduceImpl.class);
-        conf.setReducerClass(Reduce.class);
+        conf.setReducerClass(Reduce1.class);
 
         conf.setInputFormatClass(NoSplitter.class);
         conf.setOutputFormatClass(TextOutputFormat.class);
@@ -64,11 +63,16 @@ public class PageJob implements RunnableJob {
         // Set the number of nodes to run the job on.
 
         // Run the job.
+        try {
+            conf.waitForCompletion(true);
+        } catch (Exception e){
+            throw new IOException();
+        }
 
     }
 
-    public static void main(String[] args) throws IOException {
-        PageJob job = new PageJob();
+    public static void main(String[] args) throws Exception {
+        PageJob1 job = new PageJob1();
         job.run(args[0], args[1], args[2]);
     }
 

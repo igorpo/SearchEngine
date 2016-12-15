@@ -1,0 +1,90 @@
+    <project name="HW3" basedir="./">
+
+    <property name="shared.root" location="${basedir}"/>
+    <property name="project.root" location="${basedir}"/>
+    <property name="build.dir" location="${project.root}"/>
+    <property name="build.target.dir" location="${project.root}${file.separator}target"/>
+    <property name="inputlib.dir"  location="${shared.root}${file.separator}lib"/>
+    <property name="src.test.dir"  location="${build.dir}${file.separator}test"/>
+    <property name="resources.dir" location="${build.dir}${file.separator}resources"/>
+    <property name="conf.dir"      location="${build.dir}${file.separator}conf"/>
+    <property name="main-class"      value="edu.upenn.cis.cis455.webserver.HttpServer"/>
+    <property name="classes.dir"     location="${basedir}${file.separator}classes"/>
+    <property name="pageclasses.dir"     location="${basedir}${file.separator}pageclasses"/>
+    <path id="classpath">
+        <fileset dir="${inputlib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <target name="compilePage">
+        <mkdir dir="${pageclasses.dir}"/>
+        <javac srcdir="src/main/java/com/pageranker" destdir="${pageclasses.dir}" debug="on" deprecation="off" optimize="on" includeAntRuntime="no">
+            <classpath>
+                <fileset dir="${inputlib.dir}">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+
+
+    <manifestclasspath property="classpathforjarlib" jarfile="page1.jar">
+        <classpath>
+            <pathelement path="${pageclasses.dir}" />
+            <fileset dir="${inputlib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </classpath>
+    </manifestclasspath>
+
+    <target name="page1" depends="compilePage">
+        <delete file="page1.jar"/>
+        <jar destfile="page1.jar" update="true">
+            <fileset dir="${pageclasses.dir}">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="${inputlib.dir}" includes="**/*.jar" />
+            <manifest>
+                <attribute name="Main-Class" value="com.pageranker.PageJob1"/>
+                <attribute name="Class-Path" value="${classpathforjarlib}" />
+            </manifest>
+            <zipgroupfileset dir="${inputlib.dir}" includes="commons-codec-1.9.jar" />
+        </jar>
+    </target>
+    <target name="page2" depends="compilePage">
+        <delete file="page2.jar"/>
+        <jar destfile="page2.jar" update="true">
+            <fileset dir="${pageclasses.dir}">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="${pageclasses.dir}/job2">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="${inputlib.dir}" includes="**/*.jar" />
+            <manifest>
+                <attribute name="Main-Class" value="com.pageranker.job2.PageJob"/>
+                <attribute name="Class-Path" value="${classpathforjarlibpage2}" />
+            </manifest>
+        </jar>
+    </target>
+    <target name="page3" depends="compilePage">
+        <delete file="page3.jar"/>
+        <jar destfile="page3.jar" update="true">
+            <fileset dir="${pageclasses.dir}">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="${pageclasses.dir}/job3">
+                <include name="**/*.class"/>
+            </fileset>
+            <fileset dir="${inputlib.dir}" includes="**/*.jar" />
+            <manifest>
+                <attribute name="Main-Class" value="com.pageranker.job3.PageJob"/>
+                <attribute name="Class-Path" value="${classpathforjarlibpage3}" />
+            </manifest>
+        </jar>
+    </target>
+
+
+
+
+    </project>
