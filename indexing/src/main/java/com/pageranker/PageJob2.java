@@ -63,9 +63,6 @@ public class PageJob2 implements RunnableJob {
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
         FileOutputFormat.setOutputPath(conf, new Path(outputPath));
 
-        // Set the number of nodes to run the job on.
-        conf.set("num", numNodes);
-
         // Run the job.
         JobClient.runJob(conf);
     }
