@@ -1,6 +1,5 @@
 package com.pageranker;
 
-import com.pageranker.job3.PageJob;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
@@ -59,8 +58,9 @@ public class Map2 extends MapReduceBase implements Mapper<LongWritable, Text, Te
         output.collect(new Text(page), new Text(PageJob2.LINKS_PREFIX + links));
 
         // At the end of this job, the reducer will then have an input which
-        // maps a page to whether or not that page exists ("*" prefix), the pages that
-        // link to it (No Prefix), and the pages that it links to ("-" prefix).
+        // maps a page to whether or not that page exists ("*" prefix), the
+        // pages that link to it (No Prefix), and the pages that it links to
+        // ("-" prefix).
     }
 
 }
