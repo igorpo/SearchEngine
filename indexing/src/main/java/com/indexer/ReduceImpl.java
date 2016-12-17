@@ -1,9 +1,5 @@
 package com.indexer;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -27,10 +23,10 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
     @Override
     public void setup(Context c){
 
-        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        DynamoDB dynamoDB = new DynamoDB(client);
-
-        table = dynamoDB.getTable("smalltest2");
+//        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
+//        DynamoDB dynamoDBcd = new DynamoDB(client);
+//
+//        table = dynamoDB.getTable("smalltest2");
         N = Long.parseLong(c.getConfiguration().get("num"));
 
     }
@@ -62,21 +58,21 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
             full.get(count).add(url);
             full.get(count).add(new Double(tf*idf).toString());
             count++;
-            if (key != null && !key.toString().isEmpty()){
-                try {
-                    System.out.println("Adding a new item...");
-                    PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()
-                            +Integer.toString(count))
-                            .withList("data", full));
-
-                    System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
-
-                } catch (Exception e) {
-                    System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
-                    System.err.println(e.getMessage());
-                }
-
-            }
+//            if (key != null && !key.toString().isEmpty()){
+//                try {
+//                    System.out.println("Adding a new item...");
+//                    PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()
+//                            +Integer.toString(count))
+//                            .withList("data", full));
+//
+//                    System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
+//
+//                } catch (Exception e) {
+//                    System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
+//                    System.err.println(e.getMessage());
+//                }
+//
+//            }
         }
 
 
@@ -95,7 +91,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 //            }
 //
 //        }
-        //output.collect(key, new Text(full.toString()));
+        c.write(key, new Text(full.toString()));
 
     }
 }
