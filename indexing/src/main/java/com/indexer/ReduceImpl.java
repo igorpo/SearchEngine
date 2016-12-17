@@ -16,9 +16,11 @@ import java.util.Set;
  */
 public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 
+    private final static int TF_URL_PAIR_TF_INDEX = 0;
+    private final static int TF_URL_PAIR_URL_INDEX = 1;
 
     Table table;
-    long N;
+    double N;
 
     @Override
     public void setup(Context c){
@@ -27,75 +29,41 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 //        DynamoDB dynamoDBcd = new DynamoDB(client);
 //
 //        table = dynamoDB.getTable("smalltest2");
-        N = Long.parseLong(c.getConfiguration().get("num"));
+        this.N = Double.parseDouble(c.getConfiguration().get("num"));
 
     }
 
     @Override
     public void reduce(Text key, Iterable<Text> values, Context c) throws IOException, InterruptedException {
+        // If the key is or empty, don't output anything.
+        if (key == null || key.toString().equals("")) { return; }
 
+        // Add all value,url pairs to a set.
+        Set<Text> urls = new HashSet<>();
+        for (Text t : values) { urls.add(t); }
 
-//        Set<Text> urls = new HashSet<>();
-        //Text url = new Text();
-        for (Text t : values) {
-//            urls.add(t);
-            c.write(key, t);
-        }
-/*
-        int len = urls.size();
-        double idf = Math.log10((double)N/(double)len);
+        // Calculate the IDF.
+        double idf = Math.log10(N / urls.size());
 
+        // Create the list to add URL/TF-IDF terms to.
         List<List<String>> full = new ArrayList<>();
 
-        List<String> pair;
-        int count = 0;
-        for (Text o : urls) {
-            full.add(new ArrayList<>());
+        for (Text tfUrlPair : urls) {
+            // Create the pair for the output.
+            List<String> urlTfIdfPair = new ArrayList<>();
 
-            String[] stuff = o.toString().split(",", 2);
-            String url = stuff[1];
-            double tf = Double.parseDouble(stuff[0]);
-            full.get(count).add(url);
-            full.get(count).add(new Double(tf*idf).toString());
-            count++;
-            */
-//            if (key != null && !key.toString().isEmpty()){
-//                try {
-//                    System.out.println("Adding a new item...");
-//                    PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()
-//                            +Integer.toString(count))
-//                            .withList("data", full));
-//
-//                    System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
-//
-//                } catch (Exception e) {
-//                    System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
-//                    System.err.println(e.getMessage());
-//                }
-//
-//            }
+            // Parse out the URL and TF of the key in that URL.
+            String[] tfAndUrl = tfUrlPair.toString().split(",");
+            double tf = Double.parseDouble(tfAndUrl[TF_URL_PAIR_TF_INDEX]);
+            String url = ufAndUrl[TF_URL_PAIR_URL_INDEX];
+
+            // Add the information to the pair and add it to the output.
+            urlTfIdfPair.add(url);
+            urlTfIdfPair.add(Double.toString(tf * idf));
+            full.add(urlTfIdfPair);
         }
 
-
-
-//        if (key != null && !key.toString().isEmpty()){
-//            try {
-//                System.out.println("Adding a new item...");
-//                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString())
-//                        .withList("data", full));
-//
-//                System.out.println("PutItem succeeded:\n" + outcome.getPutItemResult());
-//
-//            } catch (Exception e) {
-//                System.err.println("Unable to add item: " + key.toString() + " " + urls.toString());
-//                System.err.println(e.getMessage());
-//            }
-//
-//        }
-
-    /*
+        // Write to the output.
         c.write(key, new Text(full.toString()));
-        */
-
     }
 }
