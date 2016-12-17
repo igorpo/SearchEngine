@@ -35,13 +35,13 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
     public void reduce(Text key, Iterable<Text> values, Context c) throws IOException, InterruptedException {
 
 
-        Set<Text> urls = new HashSet<>();
+//        Set<Text> urls = new HashSet<>();
         //Text url = new Text();
         for (Text t : values) {
-            urls.add(t);
-            //c.write(key, t);
+//            urls.add(t);
+            c.write(key, t);
         }
-
+/*
         int len = urls.size();
         double idf = Math.log10((double)N/(double)len);
 
@@ -58,6 +58,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
             full.get(count).add(url);
             full.get(count).add(new Double(tf*idf).toString());
             count++;
+            */
 //            if (key != null && !key.toString().isEmpty()){
 //                try {
 //                    System.out.println("Adding a new item...");
@@ -91,7 +92,10 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 //            }
 //
 //        }
+
+    /*
         c.write(key, new Text(full.toString()));
+        */
 
     }
 }
