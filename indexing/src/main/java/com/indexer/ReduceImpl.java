@@ -44,9 +44,9 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         // Create the list to add URL/TF-IDF terms to.
         List<List<String>> full = new ArrayList<>();
 
-        for (Text tfUrlPair : urls) {
-            // Create the pair for the output.
-            List<String> urlTfIdfPair = new ArrayList<>();
+        while (values.hasNext()) {
+            // Get the next value
+            Text tfUrlPair = values.next();
 
             // Parse out the URL and TF of the key in that URL.
             String[] tfAndUrl = tfUrlPair.toString().split(",");
@@ -54,6 +54,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
             String url = ufAndUrl[TF_URL_PAIR_URL_INDEX];
 
             // Add the information to the pair and add it to the output.
+            List<String> urlTfIdfPair = new ArrayList<>();
             urlTfIdfPair.add(url);
             urlTfIdfPair.add(Double.toString(tf * idf));
             full.add(urlTfIdfPair);
