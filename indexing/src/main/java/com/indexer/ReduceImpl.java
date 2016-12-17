@@ -14,10 +14,23 @@ import java.util.List;
  */
 public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 
+    /**
+     * The Index of the TF in the TF/URL pair when it is parsed from the map
+     * job.
+     */
     private final static int TF_URL_PAIR_TF_INDEX = 0;
+
+    /**
+     * The Index of the URL in the TF/URL pair when it is parsed from the map
+     * job.
+     */
     private final static int TF_URL_PAIR_URL_INDEX = 1;
 
     Table table;
+
+    /**
+     * The total number of documents being indexed.
+     */
     double N;
 
     @Override
@@ -28,7 +41,6 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 //
 //        table = dynamoDB.getTable("smalltest2");
         this.N = Double.parseDouble(c.getConfiguration().get("num"));
-
     }
 
     @Override
@@ -38,9 +50,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
 
         // Add all value,url pairs to a set.
         List<String> urls = new ArrayList<>();
-        for (Text t : values) {
-            urls.add(t.toString());
-        }
+        for (Text t : values) { urls.add(t.toString()); }
 
         // Calculate the IDF.
         double idf = Math.log10(N / urls.size());
