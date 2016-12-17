@@ -22,9 +22,7 @@ public class Reduce3 extends MapReduceBase implements Reducer<FloatWritable, Tex
                        Iterator<Text> values,
                        OutputCollector<FloatWritable, Text> output,
                        Reporter reporter) throws IOException {
-        while (values.hasNext()) {
-            output.collect(key, values.next());
-        }
+        while (values.hasNext()) { output.collect(key, values.next()); }
     }
 
 }

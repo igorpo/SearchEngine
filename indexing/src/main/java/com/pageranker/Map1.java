@@ -20,8 +20,6 @@ import java.util.List;
  */
 public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
 
-    private AmazonS3 s3;
-
     @Override
     public void setup(Context c) {
         // Set up Amazon S3

@@ -51,7 +51,7 @@ public class Map2 extends MapReduceBase implements Mapper<LongWritable, Text, Te
         for (String toPage : toPages) {
             output.collect(
                     new Text(toPage),
-                    new Text(page + " " + rank + " " + numberOfLinks));
+                    new Text(page + "\t" + rank + "\t" + numberOfLinks));
         }
 
         // Save the information regarding which pages were linked to what.
