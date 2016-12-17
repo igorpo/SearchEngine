@@ -5,6 +5,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by azw on 11/30/16.
@@ -46,14 +48,14 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         // Create the list to add URL/TF-IDF terms to.
         List<List<String>> full = new ArrayList<>();
 
-        while (String tfUrlPair : urls) {
+        for (String tfUrlPair : urls) {
             // Create the pair for the output.
             List<String> urlTfIdfPair = new ArrayList<>();
 
             // Parse out the URL and TF of the key in that URL.
             String[] tfAndUrl = tfUrlPair.split(",");
             double tf = Double.parseDouble(tfAndUrl[TF_URL_PAIR_TF_INDEX]);
-            String url = ufAndUrl[TF_URL_PAIR_URL_INDEX];
+            String url = tfAndUrl[TF_URL_PAIR_URL_INDEX];
 
             // Add the information to the pair and add it to the output.
             urlTfIdfPair.add(url);
