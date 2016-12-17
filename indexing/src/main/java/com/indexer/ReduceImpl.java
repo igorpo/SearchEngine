@@ -35,7 +35,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         if (key == null || key.toString().equals("")) { return; }
 
         // Add all value,url pairs to a set.
-        Set<Text> urls = new HashSet<>();
+        List<Text> urls = new ArrayList<>();
         for (Text t : values) { urls.add(t); }
 
         c.write(key, new Text(urls.toString()));
