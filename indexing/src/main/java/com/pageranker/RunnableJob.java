@@ -12,10 +12,9 @@ public interface RunnableJob {
      * Runs the job.
      * @param inputPath The input path for the job.
      * @param outputPath The output path for the job.
-     * @param numNodes The number of nodes to run the job with.
      * @throws IOException
      */
-    public void run(String inputPath, String outputPath, String numNodes)
+    public void run(String inputPath, String outputPath)
             throws IOException;
 
 }

@@ -12,6 +12,9 @@ import java.io.IOException;
  */
 public class Map3 extends MapReduceBase implements Mapper<LongWritable, Text, FloatWritable, Text> {
 
+    private final static int PAGE_INDEX = 0;
+    private final static int RANK_INDEX = 1;
+
     @Override
     public void configure(JobConf job) {
 
@@ -22,14 +25,9 @@ public class Map3 extends MapReduceBase implements Mapper<LongWritable, Text, Fl
                     Text value,
                     OutputCollector<FloatWritable, Text> output,
                     Reporter reporter) throws IOException {
-        String pageWithRank = value.toString();
-
-        int firstTabInx = pageWithRank.indexOf('\t');
-        int secondTabInx = pageWithRank.indexOf('\t', firstTabInx);
-
-        String page = pageWithRank.substring(0, firstTabInx);
-        float rank = Float.parseFloat(pageWithRank.substring(firstTabInx, secondTabInx).trim());
-
+        String[] parts = value.toString().split("\t");
+        String page = parts[PAGE_INDEX];
+        float rank = Float.parseFloat(parts[RANK_INDEX]);
         output.collect(new FloatWritable(rank), new Text(page));
     }
 

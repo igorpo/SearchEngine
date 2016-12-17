@@ -35,12 +35,11 @@ public class PageJob1 implements RunnableJob {
     static final String outputBucketName = "step1Output";
 
     @Override
-    public void run(String inputPath, String outputPath, String numNodes)
+    public void run(String inputPath, String outputPath)
             throws IOException {
         // Create the job and set its name.
 
         Configuration c = new Configuration();
-        c.set("num", numNodes);
         Job conf = Job.getInstance(c,"pageRank1");
         conf.setJobName("pageRank1");
 
@@ -70,7 +69,7 @@ public class PageJob1 implements RunnableJob {
 
     public static void main(String[] args) throws Exception {
         PageJob1 job = new PageJob1();
-        job.run(args[0], args[1], args[2]);
+        job.run(args[0], args[1]);
     }
 
     public static class NoSplitter extends TextInputFormat {

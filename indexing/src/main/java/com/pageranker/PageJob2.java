@@ -15,13 +15,13 @@ public class PageJob2 implements RunnableJob {
      * The prefix used for marking an output value that indicates that the
      * link has been crawled.
      */
-    public static final String IS_CRAWLED_PREFIX = "*";
+    public static final String IS_CRAWLED_PREFIX = "[IS_CRAWLED]";
 
     /**
      * The prefix used for marking an output value that indicates the links
      * which each url maps to.
      */
-    public static final String LINKS_PREFIX = "-";
+    public static final String LINKS_PREFIX = "[OUT_LINKS]";
 
     /**
      * The dampening constant for the page rank job.
@@ -41,7 +41,7 @@ public class PageJob2 implements RunnableJob {
     static final String outputBucketName = "step2Output";
 
     @Override
-    public void run(String inputPath, String outputPath, String numNodes)
+    public void run(String inputPath, String outputPath)
             throws IOException {
         // Create the job and set its name.
         JobConf conf = new JobConf(PageJob2.class);
@@ -69,6 +69,6 @@ public class PageJob2 implements RunnableJob {
 
     public static void main(String[] args) throws IOException {
         PageJob2 job = new PageJob2();
-        job.run(args[0], args[1], args[2]);
+        job.run(args[0], args[1]);
     }
 }

@@ -26,7 +26,7 @@ public class PageJob3 implements RunnableJob {
     static final String outputBucketName = "step3Output";
 
     @Override
-    public void run(String inputPath, String outputPath, String numNodes)
+    public void run(String inputPath, String outputPath)
             throws IOException {
         // Create the job and set its name.
         JobConf conf = new JobConf(PageJob3.class);
@@ -53,6 +53,6 @@ public class PageJob3 implements RunnableJob {
     }
     public static void main(String[] args) throws IOException {
         PageJob3 job = new PageJob3();
-        job.run(args[0], args[1], args[2]);
+        job.run(args[0], args[1]);
     }
 }

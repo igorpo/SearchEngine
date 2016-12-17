@@ -106,30 +106,33 @@
             </manifest>
         </jar>
     </target>
-        <manifestclasspath property="classpathforjarlibpage2" jarfile="page2.jar">
-            <classpath>
-                <pathelement path="${pageclasses.dir}" />
-                <fileset dir="${inputlib.dir}">
-                    <include name="*.jar"/>
-                </fileset>
-            </classpath>
-        </manifestclasspath>
+
+    <manifestclasspath property="classpathforjarlibpage2" jarfile="page2.jar">
+        <classpath>
+            <pathelement path="${pageclasses.dir}" />
+            <fileset dir="${inputlib.dir}">
+                <include name="*.jar"/>
+            </fileset>
+        </classpath>
+    </manifestclasspath>
+
     <target name="page2" depends="compilePage">
         <delete file="page2.jar"/>
         <jar destfile="page2.jar" update="true">
             <fileset dir="${pageclasses.dir}">
                 <include name="**/*.class"/>
             </fileset>
-            <fileset dir="${pageclasses.dir}/job2">
+            <fileset dir="${pageclasses.dir}">
                 <include name="**/*.class"/>
             </fileset>
             <fileset dir="${inputlib.dir}" includes="**/*.jar" />
             <manifest>
-                <attribute name="Main-Class" value="com.pageranker.job2.PageJob"/>
+                <attribute name="Main-Class" value="com.pageranker.PageJob2"/>
                 <attribute name="Class-Path" value="${classpathforjarlibpage2}" />
             </manifest>
         </jar>
     </target>
+
     <manifestclasspath property="classpathforjarlibpage3" jarfile="page3.jar">
         <classpath>
             <pathelement path="${pageclasses.dir}" />
@@ -138,18 +141,19 @@
             </fileset>
         </classpath>
     </manifestclasspath>
+
     <target name="page3" depends="compilePage">
         <delete file="page3.jar"/>
         <jar destfile="page3.jar" update="true">
             <fileset dir="${pageclasses.dir}">
                 <include name="**/*.class"/>
             </fileset>
-            <fileset dir="${pageclasses.dir}/job3">
+            <fileset dir="${pageclasses.dir}">
                 <include name="**/*.class"/>
             </fileset>
             <fileset dir="${inputlib.dir}" includes="**/*.jar" />
             <manifest>
-                <attribute name="Main-Class" value="com.pageranker.job3.PageJob"/>
+                <attribute name="Main-Class" value="com.pageranker.PageJob3"/>
                 <attribute name="Class-Path" value="${classpathforjarlibpage3}" />
             </manifest>
         </jar>
