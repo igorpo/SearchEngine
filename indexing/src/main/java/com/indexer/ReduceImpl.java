@@ -35,34 +35,34 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         if (key == null || key.toString().equals("")) { return; }
 
         // Add all value,url pairs to a set.
-        List<Text> urls = new ArrayList<>();
-        for (Text t : values) { urls.add(t); }
+        List<String> urls = new ArrayList<>();
+        for (Text t : values) {
+            urls.add(t.toString());
+        }
 
-        c.write(key, new Text(urls.toString()));
+        // Calculate the IDF.
+        double idf = Math.log10(N / urls.size());
 
-//        // Calculate the IDF.
-//        double idf = Math.log10(N / urls.size());
-//
-//        // Create the list to add URL/TF-IDF terms to.
-//        List<List<String>> full = new ArrayList<>();
-//
-//        while (Text tfUrlPair : urls) {
-//            // Create the pair for the output.
-//            List<String> urlTfIdfPair = new ArrayList<>();
-//
-//            // Parse out the URL and TF of the key in that URL.
-//            String[] tfAndUrl = tfUrlPair.toString().split(",");
-//            double tf = Double.parseDouble(tfAndUrl[TF_URL_PAIR_TF_INDEX]);
-//            String url = ufAndUrl[TF_URL_PAIR_URL_INDEX];
-//
-//            // Add the information to the pair and add it to the output.
-//            urlTfIdfPair.add(url);
-//            urlTfIdfPair.add(Double.toString(tf * idf));
-//            full.add(urlTfIdfPair);
-//        }
-//
-//        // Write to the output.
-//        c.write(key, new Text(full.toString()));
+        // Create the list to add URL/TF-IDF terms to.
+        List<List<String>> full = new ArrayList<>();
+
+        while (String tfUrlPair : urls) {
+            // Create the pair for the output.
+            List<String> urlTfIdfPair = new ArrayList<>();
+
+            // Parse out the URL and TF of the key in that URL.
+            String[] tfAndUrl = tfUrlPair.split(",");
+            double tf = Double.parseDouble(tfAndUrl[TF_URL_PAIR_TF_INDEX]);
+            String url = ufAndUrl[TF_URL_PAIR_URL_INDEX];
+
+            // Add the information to the pair and add it to the output.
+            urlTfIdfPair.add(url);
+            urlTfIdfPair.add(Double.toString(tf * idf));
+            full.add(urlTfIdfPair);
+        }
+
+        // Write to the output.
+        c.write(key, new Text(full.toString()));
     }
 }
 
