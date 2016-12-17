@@ -9,6 +9,7 @@ import frontier.FrontierWrapper;
 import httpClient.HttpClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.util.ArrayUtil;
 import remote.frontierServer.SyncMultQueue;
 import robots.Robots;
 import robots.RobotsTxtInfo;
@@ -83,18 +84,24 @@ public class Worker extends Thread {
      */
     public void initWorkerEssentials(String id, Master master, Messenger msgr) throws IOException {
         setID(id);
+        int threadId = Integer.parseInt(id);
         Frontier frontier = new FrontierWrapper();
         frontier.init(getID());
         log.info("INIT FRONTIER WITH ID == " + getID());
+        String[] combinedSeeds = ArrayUtil.add(ArrayUtil.add(seeds0, seeds1), seeds2);
         switch (master.nodeIndex) {
             case 0:
-                frontier.enqueue(seeds0[Integer.parseInt(getID())]);
+                frontier.enqueue(seeds0[threadId]);
                 break;
             case 1:
-                frontier.enqueue(seeds1[Integer.parseInt(getID())]);
+                frontier.enqueue(seeds1[threadId]);
                 break;
             case 2:
-                frontier.enqueue(seeds2[Integer.parseInt(getID())]);
+                frontier.enqueue(seeds2[threadId]);
+                break;
+            case 9:
+                // assumes 180 threads
+                frontier.enqueue(combinedSeeds[threadId]);
                 break;
             default:
                 log.error("No node index given, exiting...");

@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class SyncMultQueue {
 
-    public static final int MAX_QUEUE_SIZE = (int) Math.pow(2,15);
+    public static final int MAX_QUEUE_SIZE = (int) Math.pow(2,12);//(int) Math.pow(2,15);
     public static final double MAX_FILE_SIZE = Math.pow(2,30) * 1.5;
     private static final int QUEUE_SIZE = MAX_QUEUE_SIZE;// Integer.MAX_VALUE;
     private static final String QUEUES_PATH = System.getProperty("user.dir")+ "/queues/";

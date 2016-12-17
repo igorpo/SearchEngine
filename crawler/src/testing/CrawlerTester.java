@@ -1,23 +1,20 @@
-package crawler;
+package testing;
 
+import crawler.Crawler;
+import crawler.CrawlerRunner;
 import org.apache.commons.logging.Log;
-
 import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 
 /**
- * Created by igorpogorelskiy on 12/1/16.
+ * Created by YagilB on 16/12/2016.
  */
-public class CrawlerRunner {
-
+public class CrawlerTester {
     private static final Log log = LogFactory.getLog(CrawlerRunner.class);
 
-
     public static void main(String[] args) throws IOException {
-        int maxDocuments = 500000;
-        int maxThreads = -1;
-        int nodeIndex = -1;
+        int maxDocuments = 300000;
 
 //        if (args.length == 1) {
 //            try {
@@ -27,24 +24,23 @@ public class CrawlerRunner {
 //                return;
 //            }
 //        }
-//
-//        if (args.length == 2) {
-//            try {
-//                maxDocuments = Integer.parseInt(args[2]);
-//            } catch (NumberFormatException e) {
-//                log.error("Malformed argument for number of documents: " + e.getMessage());
-//                return;
-//            }
-//        }
+
+        int maxThreads = -1;
+        int nodeIndex = -1;
 
         if (args.length == 2) {
-            nodeIndex = Integer.parseInt(args[0]);
-            maxThreads = Integer.parseInt(args[1]);
-            log.info("Starting node index " + nodeIndex);
+            try {
+                nodeIndex = Integer.parseInt(args[0]);
+                maxThreads = Integer.parseInt(args[1]);
+                log.info("Starting node index " + nodeIndex + " max thrads = " + maxThreads);
+            } catch (NumberFormatException e) {
+                log.error("Malformed argument for number of documents: " + e.getMessage());
+                return;
+            }
         }
 
         if (args.length >= 3) {
-            log.info("Usage is [nodeIndex maxThreads]\nDefault is 8 threads and unlimited documents");
+            log.info("Usage is [maxThreads maxDocs]\nDefault is 8 threads and unlimited documents");
             return;
         }
 

@@ -2,16 +2,19 @@ package threads;
 
 import crawler.Messenger;
 import databases.DynamoWrapper;
+import databases.S3Wrapper;
 import filelogger.FileLogger;
 import frontier.Frontier;
-import robots.RobotsTxtInfo;
-import databases.S3Wrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import robots.RobotsTxtInfo;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by igorpogorelskiy on 12/1/16.
@@ -71,16 +74,17 @@ public class Master {
     /**
      * Bucket name for S3 db
      */
-//    private static final String BUCKET_NAME = "cis-455";
-    static final String BUCKET_NAME = "cis-455-final";
+    private static final String BUCKET_NAME = "cis-455-eval";
+//    static final String BUCKET_NAME = "cis-455-final";
 
     /**
      * Dynamo table name for {url -> [outgoing link list]}
      */
-    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
-//    static final String DYNAMO_DB_NAME = "testing_urls";
+//    private static final String DYNAMO_DB_NAME = "visitedUrlsOutgoingLinks";
+    static final String DYNAMO_DB_NAME = "timer";
 
     private static final String LOG_PATH = "log.out";
+    private int secondsPassed = 0;
 
     public static int nodeIndex = -1;
     /**
@@ -108,6 +112,21 @@ public class Master {
         } catch (Exception e) {
             log.error("Could not launch initial thread pool: " + e.getMessage());
         }
+
+        Runnable periodicCount = new Runnable() {
+            public void run() {
+
+                log.info("Seconds passed: " + secondsPassed + " documents processed: " + currentNumDocumentsProcessed);
+                secondsPassed += 60;
+                if (secondsPassed >= 120)
+                    System.exit(0);
+            }
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(periodicCount, 0, 60, TimeUnit.SECONDS);
+
+
     }
 
     /**
@@ -127,6 +146,8 @@ public class Master {
                 log.error("Failed to contact the remote queue service " + e.getMessage());
             }
         }
+        // timer print out how many docs processed every 60 seconds
+
     }
 
     /**

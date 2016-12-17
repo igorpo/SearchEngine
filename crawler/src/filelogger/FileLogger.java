@@ -48,6 +48,9 @@ public class FileLogger {
     }
 
     public static void init(String path) {
+        if (1==1)
+            return;
+
         d = null;
         try {
             LOG_ROOT_LOCATION = path;
@@ -71,6 +74,9 @@ public class FileLogger {
     }
 
     private static synchronized void log(String level, String toLog) {
+        if (1==1)
+            return;
+
         try {
             d.write(level + getDateString() + ": "+ toLog + NL);
             d.flush();

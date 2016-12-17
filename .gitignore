@@ -2,7 +2,7 @@ ec2/
 seedlinks.txt
 
 *.class
-
+report/
 *.iml
 .idea/
 crawler/.idea/

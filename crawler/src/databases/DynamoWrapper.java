@@ -72,6 +72,10 @@ public class DynamoWrapper {
      */
     public static boolean storeURLOutgoingLinks(String url, List<String> links) {
         try {
+            //for testing
+            if (1==1) {
+                return false;
+            }
 
             Map<String, AttributeValue> newEntry = new HashMap<String, AttributeValue>();
             String safeKey = S3Wrapper.encodeSafeKey(url);

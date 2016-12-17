@@ -3,6 +3,10 @@ package httpClient;
 /**
  * Created by igorpogorelskiy on 12/1/16.
  */
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,15 +15,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import javax.net.ssl.HttpsURLConnection;
+import java.util.*;
 
 public class HttpClient {
 
@@ -139,10 +135,10 @@ public class HttpClient {
                 String line = input.readLine().toLowerCase();
                 String[] responseLine = line.split("\\s+", 3);
 
-                log.info("URL = "+url+" and response line is " + line);
+//                log.info("URL = "+url+" and response line is " + line);
 
                 if (responseLine.length != 3) {
-                    log.info("response line length " + responseLine.length);
+//                    log.info("response line length " + responseLine.length);
                     return false;
                 }
 
@@ -227,12 +223,12 @@ public class HttpClient {
 
     public boolean execute(String method, boolean isSecure, String path, String url, int port, String host, Date ifModifiedSince) {
         reset(); // clear old headers, properties, etc.
-        log.info("URL is "+url+" and Status code is " + properties.get(RESPONSE_STATUS_CODE));
+//        log.info("URL is "+url+" and Status code is " + properties.get(RESPONSE_STATUS_CODE));
         setProperty(REQUEST_METHOD, method);
         URL httpsUrl;
         HttpsURLConnection connection = null;
         if (isSecure && method.equals("GET")) { // we can handle this directly
-            log.info("GET " + url);
+//            log.info("GET " + url);
             try {
                 httpsUrl = new URL(url);
                 connection = (HttpsURLConnection) httpsUrl.openConnection();
@@ -267,7 +263,7 @@ public class HttpClient {
                 }
             }
         } else if (isSecure && method.equals("HEAD")) {
-            log.info("HEAD " + url);
+//            log.info("HEAD " + url);
             try {
                 httpsUrl = new URL(url);
                 connection = (HttpsURLConnection) httpsUrl.openConnection();
