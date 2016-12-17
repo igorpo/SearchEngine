@@ -1,6 +1,5 @@
 package com.indexer;
 
-import org.apache.commons.logging.Log;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -22,7 +21,7 @@ public class IndexerJob {
 
 
 
-    static final String bucketName = "jarbuck123412341234";
+    static final String bucketName = "jarbuckpage";
 
 
 
