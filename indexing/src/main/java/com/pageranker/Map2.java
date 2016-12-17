@@ -1,6 +1,5 @@
 package com.pageranker;
 
-import com.pageranker.job3.PageJob;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;

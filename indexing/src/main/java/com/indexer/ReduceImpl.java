@@ -1,5 +1,9 @@
 package com.indexer;
 
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.document.Item;
+import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -36,10 +40,10 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
     @Override
     public void setup(Context c){
 
-//        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-//        DynamoDB dynamoDBcd = new DynamoDB(client);
-//
-//        table = dynamoDB.getTable("smalltest2");
+        AmazonDynamoDBClient client = new AmazonDynamoDBClient();
+        DynamoDB dynamoDB = new DynamoDB(client);
+
+        table = dynamoDB.getTable("actualtest1");
         this.N = Double.parseDouble(c.getConfiguration().get("num"));
     }
 
@@ -73,8 +77,14 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
             full.add(urlTfIdfPair);
         }
 
+        try {
+            PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()).withList("data", full));
+            outcome.getPutItemResult();
+        } catch (Exception e) {
+
+        }
         // Write to the output.
-        c.write(key, new Text(full.toString()));
+        //c.write(key, new Text(full.toString()));
     }
 }
 

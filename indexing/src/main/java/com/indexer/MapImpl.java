@@ -1,6 +1,11 @@
 package com.indexer;
 
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -9,12 +14,16 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static com.indexer.IndexerJob.bucketName;
 
 /**
  * Created by azw on 11/30/16.
@@ -30,33 +39,33 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
 
     @Override
     public void setup(Context context){
-        //s3 = new AmazonS3Client();
-        //Region reg = Region.getRegion(Regions.US_EAST_1);
-        //s3.setRegion(reg);
+        s3 = new AmazonS3Client();
+        Region reg = Region.getRegion(Regions.US_EAST_1);
+        s3.setRegion(reg);
 
-        // Stop list setup
-        //S3Object stopDoc = s3.getObject(new GetObjectRequest(bucketName, stopList));
-        //if (stopDoc == null){
-//            System.err.println("Could not get stop word file: " + stopList);
-            //return;
-        //}
-//        BufferedReader stopReader = new BufferedReader(new
-//                InputStreamReader(stopDoc.getObjectContent()));
-//
-//        String stopLine;
+         //Stop list setup
+        S3Object stopDoc = s3.getObject(new GetObjectRequest(bucketName, stopList));
+        if (stopDoc == null){
+            //System.err.println("Could not get stop word file: " + stopList);
+            return;
+        }
+        BufferedReader stopReader = new BufferedReader(new
+                InputStreamReader(stopDoc.getObjectContent()));
+
+        String stopLine;
         stopWords = new HashSet<>();
-//        Stemmer stemmer = new Stemmer();
-//        String stemmedWord;
-//        try {
-//            while ((stopLine = stopReader.readLine()) != null) {
-//                stemmer.add(stopLine.toCharArray(), stopLine.length());
-//                stemmer.stem();
-//                stemmedWord = stemmer.toString();
-//                stopWords.add(stemmedWord);
-//            }
-//        } catch(IOException e) {
-//            System.err.println("IOException: Could not read stop word file: " + stopList);
-//        }
+        String stemmedWord;
+        try {
+            while ((stopLine = stopReader.readLine()) != null) {
+                Stemmer stemmer = new Stemmer();
+                stemmer.add(stopLine.toCharArray(), stopLine.length());
+                stemmer.stem();
+                stemmedWord = stemmer.toString();
+                stopWords.add(stemmedWord);
+            }
+        } catch(IOException e) {
+            //System.err.println("IOException: Could not read stop word file: " + stopList);
+        }
         // end of stop list setup
     }
 
