@@ -5,10 +5,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by azw on 11/30/16.
@@ -97,5 +93,5 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         c.write(key, new Text(full.toString()));
         */
 
-    }
 }
+
