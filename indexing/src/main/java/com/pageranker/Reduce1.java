@@ -28,14 +28,12 @@ public class Reduce1 extends Reducer<Text, Text, Text, Text> {
 
         sb.append("1.0\t");
 
-        boolean first = false;
+        boolean first = true;
         for (Text t : values) {
-            if (!first) {
-                sb.append(",");
-                first = true;
-            }
+            if (!first) { sb.append(",");}
 
             sb.append(t.toString());
+            first = false;
         }
 
         // TODO: Gus & Chris - Make this work by putting output to S3/Dynamo/Whatever works
