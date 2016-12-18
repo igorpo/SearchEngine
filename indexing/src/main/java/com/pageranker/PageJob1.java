@@ -40,6 +40,8 @@ public class PageJob1 implements RunnableJob {
         // Create the job and set its name.
 
         Configuration c = new Configuration();
+        c.setLong("mapreduce.task.timeout", 0);
+        c.setLong("mapred.task.timeout", 0);
         Job conf = Job.getInstance(c,"pageRank1");
         conf.setJobName("pageRank1");
 
@@ -120,33 +122,33 @@ public class PageJob1 implements RunnableJob {
         }
 
 
+        boolean read = true;
         @Override
         public boolean nextKeyValue() throws IOException {
             // Current offset is the key
             key.set(pos);
 
-            int newSize = 0;
-            String temp = "";
-            while (pos < end) {
-                newSize = in.readLine(value, maxLineLength,
-                        Math.max((int) Math.min(
-                                Integer.MAX_VALUE, end - pos),
-                                maxLineLength));
-
-                if (newSize == 0) {
-                    break;
-                }
-                pos += newSize;
-                temp = temp + value.toString();
-            }
-            value.set(temp);
-
-            if (newSize == 0) {
-                key = null;
-                value = null;
-                return false;
-            } else {
+//            int newSize = 0;
+//            String temp = "";
+//            while (pos < end) {
+//                newSize = in.readLine(value, maxLineLength,
+//                        Math.max((int) Math.min(
+//                                Integer.MAX_VALUE, end - pos),
+//                                maxLineLength));
+//
+//                if (newSize == 0) {
+//                    break;
+//                }
+//                pos += newSize;
+//                temp = temp + value.toString();
+//            }
+//            value.set(temp);
+            value.set("");
+            if (read) {
                 return true;
+            } else {
+                read = false;
+                return false;
             }
         }
 

@@ -22,7 +22,7 @@ public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
     @Override
     public void setup(Context c) {
         // Set up Amazon S3
-        S3Wrapper.init("cis-455");
+        S3Wrapper.init("cis-455-final");
 
         // Set up Amazon DynamoDB
         DynamoWrapper.init();
