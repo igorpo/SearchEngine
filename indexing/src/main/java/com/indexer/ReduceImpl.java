@@ -1,7 +1,5 @@
 package com.indexer;
 
-import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
@@ -43,8 +41,8 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
     public void setup(Context c){
 
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
-        Region reg = Region.getRegion(Regions.US_EAST_1);
-        client.setRegion(reg);
+        //Region reg = Region.getRegion(Regions.US_EAST_1);
+        //client.setRegion(reg);
         DynamoDB dynamoDB = new DynamoDB(client);
 
         table = dynamoDB.getTable("finalIndex250keast");
@@ -54,7 +52,11 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
     @Override
     public void reduce(Text key, Iterable<Text> values, Context c) throws IOException, InterruptedException {
         // If the key is or empty, don't output anything.
-        if (key == null || key.toString().equals("")) { return; }
+        if (key == null){
+            return;
+        }
+        String key_s = key.toString();
+        if (key_s.equals("")) { return; }
 
         // Add all value,url pairs to a set.
         List<String> urls = new ArrayList<>();
@@ -82,11 +84,12 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         }
 
         try {
-            PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key.toString()).withList("data", full));
+            PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("word", key_s).withList("data", full));
             outcome.getPutItemResult();
         } catch (Exception e) {
-
         }
+
+
         // Write to the output.
         //c.write(key, new Text(full.toString()));
     }

@@ -72,14 +72,20 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
     @Override
     public void map(LongWritable key, Text value, Context c) throws IOException, InterruptedException {
 
+        String val = value.toString();
         // If the document has no text, skip it.
-        if (value.toString().equals("")) { return; }
+        if (val == null || val.isEmpty() || "".equals(val)) { return; }
 
         // Get the file url.
         String url = ((FileSplit) c.getInputSplit()).getPath().getName();
 
         // Parse out the document and ensure that is valid.
-        Document test = Jsoup.parse(value.toString());
+        Document test;
+        try {
+            test = Jsoup.parse(val);
+        } catch (IllegalArgumentException e){
+            return;
+        }
         if (test == null || test.body() == null) { return; }
 
         // Remove any code from the HTML.
@@ -120,7 +126,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         final Pattern p3 = Pattern.compile("[\\p{Alpha}]+[0-9]\\p{Alnum}]*");
 
         for (String w : tfs.keySet()) {
-            if (p.matcher(w).matches()
+            if ((w.length() > 4 && p.matcher(w).matches())
                     || p2.matcher(w).matches()
                     || p3.matcher(w).matches()) {
                 continue;
