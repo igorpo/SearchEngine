@@ -19,15 +19,10 @@ import java.io.IOException;
 
 public class IndexerJob {
 
-
-
     static final String bucketName = "jarbuckpage";
-
-
 
     public static void main(String[] args) throws Exception {
 
-//
 //        String roleArn = "arn:aws:iam::172510697573:role/Chris_S3";
 //        AWSSecurityTokenServiceClient sts = new AWSSecurityTokenServiceClient(
 //                new PropertiesCredentials(IndexerJob.class.getResourceAsStream("AwsCredentials.properties"))
@@ -38,47 +33,39 @@ public class IndexerJob {
 //
 //        AssumeRoleResult ar = sts.assumeRole(assumeRoleRequest);
 
+        Configuration conf = new Configuration();
+        conf.set("num", args[2]);
+        conf.setLong("mapreduce.task.timeout", 0);
+        conf.setLong("mapred.task.timeout", 0);
 
-        Configuration c = new Configuration();
-        c.set("num", args[2]);
-        c.setLong("mapreduce.task.timeout", 0);
-        c.setLong("mapred.task.timeout", 0);
+        Job job = Job.getInstance(c,"wordcount");
+        job.setJobName("wordcount");
 
-        Job conf = Job.getInstance(c,"wordcount");
-        conf.setJobName("wordcount");
+        job.setJarByClass(IndexerJob.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
 
+        job.setMapperClass(MapImpl.class);
+        //job.setCombinerClass(ReduceImpl.class);
+        job.setReducerClass(ReduceImpl.class);
 
+        job.setInputFormatClass(NoSplitter.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
 
-        conf.setJarByClass(IndexerJob.class);
-        conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(Text.class);
-
-        conf.setMapperClass(MapImpl.class);
-        //conf.setCombinerClass(ReduceImpl.class);
-        conf.setReducerClass(ReduceImpl.class);
-
-        conf.setInputFormatClass(NoSplitter.class);
-        conf.setOutputFormatClass(TextOutputFormat.class);
-
-        FileInputFormat.setInputPaths(conf, new Path(args[0]));
-        FileOutputFormat.setOutputPath(conf, new Path(args[1]));
+        FileInputFormat.setInputPaths(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
         /*
-        conf.set("num",
-                Long.toString(FileSystem.get(conf).getContentSummary(new Path(args[0])).getFileCount()));
+        job.set("num",
+                Long.toString(FileSystem.get(job).getContentSummary(new Path(args[0])).getFileCount()));
         */
-        //conf.set("num", args[2]);
+        //job.set("num", args[2]);
 
-
-
-        conf.waitForCompletion(true);
-
+        return job.waitForCompletion(true) ? 0 : 1;
 
     }
 
     public static class NoSplitter extends TextInputFormat {
-
-
         @Override
         public boolean isSplitable(JobContext a, Path file){
             return false;

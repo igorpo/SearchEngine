@@ -36,9 +36,11 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
     private AmazonS3 s3;
     private String stopList = "stopList.txt";
     private Set<String> stopWords;
-
+    
+    
     @Override
     public void setup(Context context){
+        Log.info("Started setup");
         s3 = new AmazonS3Client();
         Region reg = Region.getRegion(Regions.US_EAST_1);
         s3.setRegion(reg);
@@ -56,24 +58,26 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         String stopLine;
         stopWords = new HashSet<>();
         String stemmedWord;
+        Stemmer stemmer = new Stemmer();
         try {
             while ((stopLine = stopReader.readLine()) != null) {
-                Stemmer stemmer = new Stemmer();
                 stemmer.add(stopLine.toCharArray(), stopLine.length());
                 stemmer.stem();
                 stemmedWord = stemmer.toString();
                 stopWords.add(stemmedWord);
+                stemmer.clear();
             }
         } catch(IOException e) {
             //System.err.println("IOException: Could not read stop word file: " + stopList);
             Log.error("IOException: Could not read stop word file: " + stopList);
         }
         // end of stop list setup
+        Log.info("Finished setup");
     }
 
     @Override
     public void map(LongWritable key, Text value, Context c) throws IOException, InterruptedException {
-
+        Log.info("Started map with key = " + key.toString() + " value = " + value.toString());
         String val = value.toString();
         // If the document has no text, skip it.
         if (value.toString().equals("")) { 
@@ -86,31 +90,38 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
 
         // Parse out the document and ensure that is valid.
         Document test;
+
         try {
             test = Jsoup.parse(val);
         } catch (IllegalArgumentException e){
             Log.error("Document is invalid, skipping...");
             return;
         }
-        if (test == null || test.body() == null) {  Log.error("Document is invalid, skipping..."); return; }
+        
+        if (test == null || test.body() == null) {  
+            Log.error("Document is invalid, skipping..."); 
+            return; 
+        }
 
         // Remove any code from the HTML.
         test.select("script,jscript,style").remove();
 
         // Parse out the text from the document.
         String document = test.body().text();
+
         if (test.head() != null) { 
             document += test.head().text(); 
-            Log.info("test.head() != null");
+            // Log.info("test.head() != null");
         }
+
         String[] words = document.toLowerCase().split("\\W+");
 
         // TODO: If running too slow, might want to get rid of stemming or
         // extract to another for loop to stem only once
         Map<String, Integer> tfs = new HashMap<>();
         String stemmedWord;
+        Stemmer stemmer = new Stemmer();
         for (String w : words) {
-            Stemmer stemmer = new Stemmer();
             stemmer.add(w.toCharArray(), w.length());
             stemmer.stem();
             stemmedWord = stemmer.toString();
@@ -119,7 +130,8 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
             } else {
                 tfs.put(stemmedWord, 1);
             }
-            Log.info("Stemmed " + stemmedWord);
+            stemmer.clear();
+            // Log.info("Stemmed " + stemmedWord);
         }
 
         // Find the maximum term frequency.
@@ -127,7 +139,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         for (Map.Entry<String, Integer> e : tfs.entrySet()) {
             if (e.getValue() > maxVal) {
                 maxVal = e.getValue();
-                Log.info("maxVal = " + maxVal);
+                // Log.info("maxVal = " + maxVal);
             }
         }
 
@@ -147,11 +159,10 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
             // Calculate the term frequency and write it out.
             if (!stopWords.contains(w)) {
                 double tf = .5 + (.5 * (double) tfs.get(w) / maxVal);
-                Log.info("Writing!");
+                Log.info("Writing: word = " + w + " tf = " + tf + " url = " + url);
                 c.write(new Text(w), new Text(tf + "," + url));
-            } else {
-                Log.error("NOT WRITING");
             }
         }
+        Log.info("Finished map with key = " + key.toString() + " value = " + value.toString());
     }
 }
