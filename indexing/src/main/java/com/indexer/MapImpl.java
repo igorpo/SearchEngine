@@ -47,6 +47,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         S3Object stopDoc = s3.getObject(new GetObjectRequest(bucketName, stopList));
         if (stopDoc == null){
             //System.err.println("Could not get stop word file: " + stopList);
+            Log.error("Could not get stop word file: " + stopList);
             return;
         }
         BufferedReader stopReader = new BufferedReader(new
@@ -65,6 +66,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
             }
         } catch(IOException e) {
             //System.err.println("IOException: Could not read stop word file: " + stopList);
+            Log.error("IOException: Could not read stop word file: " + stopList);
         }
         // end of stop list setup
     }
@@ -74,7 +76,10 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
 
         String val = value.toString();
         // If the document has no text, skip it.
-        if (val == null || val.isEmpty() || "".equals(val)) { return; }
+        if (value.toString().equals("")) { 
+            Log.error("Document has no text, skipping...");
+            return; 
+        }
 
         // Get the file url.
         String url = ((FileSplit) c.getInputSplit()).getPath().getName();
@@ -84,16 +89,20 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         try {
             test = Jsoup.parse(val);
         } catch (IllegalArgumentException e){
+            Log.error("Document is invalid, skipping...");
             return;
         }
-        if (test == null || test.body() == null) { return; }
+        if (test == null || test.body() == null) {  Log.error("Document is invalid, skipping..."); return; }
 
         // Remove any code from the HTML.
         test.select("script,jscript,style").remove();
 
         // Parse out the text from the document.
         String document = test.body().text();
-        if (test.head() != null) { document += test.head().text(); }
+        if (test.head() != null) { 
+            document += test.head().text(); 
+            Log.info("test.head() != null");
+        }
         String[] words = document.toLowerCase().split("\\W+");
 
         // TODO: If running too slow, might want to get rid of stemming or
@@ -110,6 +119,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
             } else {
                 tfs.put(stemmedWord, 1);
             }
+            Log.info("Stemmed " + stemmedWord);
         }
 
         // Find the maximum term frequency.
@@ -117,6 +127,7 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
         for (Map.Entry<String, Integer> e : tfs.entrySet()) {
             if (e.getValue() > maxVal) {
                 maxVal = e.getValue();
+                Log.info("maxVal = " + maxVal);
             }
         }
 
@@ -129,13 +140,17 @@ public class MapImpl extends Mapper<LongWritable, Text, Text, Text> {
             if ((w.length() > 4 && p.matcher(w).matches())
                     || p2.matcher(w).matches()
                     || p3.matcher(w).matches()) {
+                Log.error("Continuing here...");
                 continue;
             }
 
             // Calculate the term frequency and write it out.
             if (!stopWords.contains(w)) {
                 double tf = .5 + (.5 * (double) tfs.get(w) / maxVal);
+                Log.info("Writing!");
                 c.write(new Text(w), new Text(tf + "," + url));
+            } else {
+                Log.error("NOT WRITING");
             }
         }
     }

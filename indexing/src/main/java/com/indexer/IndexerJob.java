@@ -41,8 +41,10 @@ public class IndexerJob {
 
         Configuration c = new Configuration();
         c.set("num", args[2]);
+
         Job conf = Job.getInstance(c,"wordcount");
         conf.setJobName("wordcount");
+
 
 
         conf.setJarByClass(IndexerJob.class);
