@@ -24,6 +24,7 @@ public class DynamoWrapper {
     private static AmazonDynamoDBClient dynamoClient = null;
     private static DynamoDB dynamoDB;
     private static String table = "";
+    private static Table t;
     private static final String ROLE_ARN = "arn:aws:iam::172510697573:policy/AmazonDynamoDBFullAccess-CIS455";
     private static String ROLE_SESSION = "455-searchengine";
 
@@ -62,6 +63,7 @@ public class DynamoWrapper {
      */
     public static void setTable(String tableName) {
         table = tableName;
+        t = dynamoDB.getTable(table);
     }
 
     /**
@@ -125,7 +127,7 @@ public class DynamoWrapper {
     public static List<String> retrieveOutgoingLinksForURL(String url) {
         String safeKey = S3Wrapper.encodeSafeKey(url);
         List<String> results = new ArrayList<>();
-        Table t = dynamoDB.getTable(table);
+        //Table t = dynamoDB.getTable(table);
         Item item = t.getItem("url", safeKey);
         if (item != null) {
             Set<String> s = item.getStringSet("outgoingLinks");

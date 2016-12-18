@@ -1,5 +1,6 @@
 package com.pageranker;
 
+import com.amazonaws.services.kinesis.model.ProvisionedThroughputExceededException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -38,10 +39,22 @@ public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
         String url = S3Wrapper.decodeSafeKey((((FileSplit) c.getInputSplit()).getPath()).getName());
 
         // Get the list of URLs
-        List<String> links = DynamoWrapper.retrieveOutgoingLinksForURL(url);
+        List<String> links = null;
+        int numTries = 1;
+        try {
+            links = DynamoWrapper.retrieveOutgoingLinksForURL(url);
+        } catch (ProvisionedThroughputExceededException e){
+            Thread.sleep(1000);
+            numTries++;
+            if (numTries > 100){
+                throw e;
+            }
+        }
 
-        for (String link : links) {
-            c.write(new Text(url), new Text(link));
+        if (links != null) {
+            for (String link : links) {
+                c.write(new Text(url), new Text(link));
+            }
         }
 
     }

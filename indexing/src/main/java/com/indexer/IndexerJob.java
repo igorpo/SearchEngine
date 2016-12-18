@@ -36,9 +36,9 @@ public class IndexerJob {
         Configuration conf = new Configuration();
         conf.set("num", args[2]);
         conf.setLong("mapreduce.task.timeout", 0);
-        // conf.setLong("mapred.task.timeout", 0);
+        conf.setLong("mapred.task.timeout", 0);
 
-        Job job = Job.getInstance(c,"wordcount");
+        Job job = Job.getInstance(conf,"wordcount");
         job.setJobName("wordcount");
 
         job.setJarByClass(IndexerJob.class);
@@ -61,7 +61,7 @@ public class IndexerJob {
         */
         //job.set("num", args[2]);
 
-        return job.waitForCompletion(true) ? 0 : 1;
+        job.waitForCompletion(true);
 
     }
 
@@ -88,6 +88,7 @@ public class IndexerJob {
         private int maxLineLength;
         private LongWritable key = new LongWritable();
         private Text value = new Text();
+
 
         @Override
         public void initialize(InputSplit genericSplit, TaskAttemptContext context) throws IOException {
@@ -117,7 +118,7 @@ public class IndexerJob {
             key.set(pos);
 
             int newSize = 0;
-            String temp = "";
+            StringBuilder sb = new StringBuilder();
             while (pos < end) {
                 newSize = in.readLine(value, maxLineLength,
                         Math.max((int) Math.min(
@@ -128,9 +129,9 @@ public class IndexerJob {
                     break;
                 }
                 pos += newSize;
-                temp = temp + value.toString();
+                sb.append(value.toString());
             }
-            value.set(temp);
+            value.set(sb.toString());
 
             if (newSize == 0) {
                 key = null;
