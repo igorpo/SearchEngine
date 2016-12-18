@@ -191,7 +191,7 @@ public class Worker extends Thread {
                         master.robotsForUrl.put(normalizedInfo.getHostName(), rInfo);
                         master.crawlTimes.put(normalizedInfo.getHostName(), new Date().getTime());
                     }
-                    int crawlDelay = 0;
+                    double crawlDelay = 0;
                     if (rInfo != null && (rInfo.containsUserAgent("*") || rInfo.containsUserAgent(HttpClient.CIS455_CRAWLER))) {
                         if (rInfo.containsUserAgent(HttpClient.CIS455_CRAWLER)) {
                             ArrayList<String> allowed = rInfo.getAllowedLinks(HttpClient.CIS455_CRAWLER);
@@ -225,7 +225,8 @@ public class Worker extends Thread {
                         if ((new Date().getTime() - lastCrawledAt) < crawlDelay * 1000) {
                             log.info("Experiencing crawl delay... ");
                             try {
-                                Thread.sleep(crawlDelay * 1000);
+                                long sleepTime = (long) crawlDelay * 1000;
+                                Thread.sleep(sleepTime);
                             } catch (InterruptedException e) {
                                 log.error("Interrupted while waiting for crawl delay to finish " + e.getMessage());
                                 continue;
@@ -299,7 +300,8 @@ public class Worker extends Thread {
                             // TODO refactor into switching to other tasks from the queue instead of sleep
                             if (crawlDelay > 0) {
                                 log.info("Waiting out crawl delay between HEAD and GET of " + normalizedInfo.getHostName());
-                                Thread.sleep(crawlDelay * 1000);
+                                long sleepTime = (long) crawlDelay * 1000;
+                                Thread.sleep(sleepTime);
                             }
                         } catch (InterruptedException e) {
                             log.error("Delay between HEAD and GET for page was interrupted... going to next page");
@@ -479,15 +481,14 @@ public class Worker extends Thread {
             if (link.startsWith("http")) {
                 // absolute link
                 handleLink(outgoingLinks, link);
-
             } else {
+                String absolute = null;
                 try {
                     URL base = new URL(url);
-                    String absolute = new URL(base, link).toString();
-
+                    absolute = new URL(base, link).toString();
                     handleLink(outgoingLinks, absolute);
                 } catch (MalformedURLException e) {
-                    log.error("Error turning a relative url into an absolute url");
+                    log.error("Error: url = " + url + " link = " + link);
                 }
             }
         }

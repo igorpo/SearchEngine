@@ -54,12 +54,14 @@ public class Robots {
         // split on whitespace to get blocks of text
         String[] blocks = robotsdottxt.split("\\r?\\n\\s+");
         String currentAgent = "";
+        double crawlDelay = 0;
         for (String block : blocks) {
             String[] lines = block.split("\\r?\\n");
             for (String line : lines) {
                 line = stripComment(line).trim();
                 if (!line.isEmpty()) {
                     String[] directive = line.split(":\\s*", 2);
+
                     if (directive[0].equalsIgnoreCase("User-agent")) {
                         currentAgent = directive[1];
                         rInfo.addUserAgent(currentAgent);
@@ -68,7 +70,11 @@ public class Robots {
                     } else if (directive[0].equalsIgnoreCase("Allow")) {
                         rInfo.addAllowedLink(currentAgent, directive[1]);
                     } else if (directive[0].equalsIgnoreCase("Crawl-delay")) {
-                        rInfo.addCrawlDelay(currentAgent, Integer.parseInt(directive[1]));
+                        if (directive.length > 1) {
+                            crawlDelay = Double.parseDouble(directive[1].replace("\"",""));
+
+                            rInfo.addCrawlDelay(currentAgent, crawlDelay);
+                        }
                     } else if (directive[0].equalsIgnoreCase("Sitemap")) {
                         rInfo.addSitemapLink(directive[1]);
                     }

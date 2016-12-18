@@ -81,6 +81,12 @@ public class FrontierServer {
 
                 String threadID = request.params("threadID");
 
+
+                if (request.contentLength() > 200000) {
+                    System.out.println("Request content length too large " + request.contentLength());
+                    return null;
+                }
+
                 // urls is a list
                 String urlsString = request.queryParams("urls");
                 List<String> linksList = null;
