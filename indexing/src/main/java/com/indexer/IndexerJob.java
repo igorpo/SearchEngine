@@ -41,6 +41,8 @@ public class IndexerJob {
 
         Configuration c = new Configuration();
         c.set("num", args[2]);
+        c.setLong("mapreduce.task.timeout", 0);
+        c.setLong("mapred.task.timeout", 0);
 
         Job conf = Job.getInstance(c,"wordcount");
         conf.setJobName("wordcount");

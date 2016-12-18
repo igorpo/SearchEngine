@@ -104,6 +104,7 @@
                 <attribute name="Main-Class" value="com.pageranker.PageJob1"/>
                 <attribute name="Class-Path" value="${classpathforjarlibpage}" />
             </manifest>
+            <zipgroupfileset dir="${inputlib.dir}" includes="commons-codec-1.9.jar" />
         </jar>
     </target>
 

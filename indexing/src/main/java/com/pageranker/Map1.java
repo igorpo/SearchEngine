@@ -1,6 +1,5 @@
 package com.pageranker;
 
-import com.amazonaws.services.s3.AmazonS3;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -27,7 +26,7 @@ public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
 
         // Set up Amazon DynamoDB
         DynamoWrapper.init();
-        DynamoWrapper.setTable("visitedUrlsOutgoingLinks");
+        DynamoWrapper.setTable("testing_urls");
     }
 
     @Override
