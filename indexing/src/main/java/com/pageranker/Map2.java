@@ -21,26 +21,36 @@ public class Map2 extends MapReduceBase implements Mapper<LongWritable, Text, Te
                     Text value,
                     OutputCollector<Text, Text> output,
                     Reporter reporter) throws IOException {
-        int tabAfterPageInx = value.find("\t");
-        int tabAfterRankInx = value.find("\t", tabAfterPageInx + 1);
 
-        // Parse out the information stored in the value.
-        String page = value.toString()
-                           .substring(0, tabAfterPageInx)
-                           .trim();
-        String rank = value.toString()
-                           .substring(tabAfterPageInx, tabAfterRankInx)
-                           .trim();
+//        int tabAfterPageInx = value.find("\t");
+//        int tabAfterRankInx = value.find("\t", tabAfterPageInx + 1);
+//        if (tabAfterPageInx < 0 || tabAfterRankInx < 0){
+//            return;
+//        }
+//
+//        // Parse out the information stored in the value.
+//        String page = value.toString()
+//                           .substring(0, tabAfterPageInx)
+//                           .trim();
+//        String rank = value.toString()
+//                           .substring(tabAfterPageInx, tabAfterRankInx)
+//                           .trim();
+
+        String[] parts = value.toString().split("\t");
+        if (parts.length != 3){
+            return;
+        }
+        String page = parts[0];
+        String rank = parts[1];
 
         // Mark the page as  existing from our crawler.
         output.collect(new Text(page), new Text(PageJob2.IS_CRAWLED_PREFIX));
 
-        if (tabAfterRankInx == -1) { return; }
 
         // Parse out the other links after we are sure that other links exist,
         // and we know a StringOutOfBounds exception won't be thrown by getting
         // the specified substring.
-        String links = value.toString().substring(tabAfterRankInx).trim();
+        String links = parts[2];
         String[] toPages = links.split(",");
         int numberOfLinks = toPages.length;
 

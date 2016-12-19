@@ -30,7 +30,7 @@ public class Reduce1 extends Reducer<Text, Text, Text, Text> {
 
         boolean first = true;
         for (Text t : values) {
-            if (!first) { sb.append(",");}
+            if (!first) { sb.append(","); }
 
             sb.append(t.toString());
             first = false;

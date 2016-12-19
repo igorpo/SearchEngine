@@ -1,13 +1,10 @@
 package com.pageranker;
 
-import com.amazonaws.services.kinesis.model.ProvisionedThroughputExceededException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import java.io.IOException;
-import java.util.List;
 
 /**
  * The mapping job for the first step of the PageRank job. This job will read
@@ -49,7 +46,7 @@ public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
         if (firstSplit.length != 3)
             return;
         String url = firstSplit[2];
-        String[] links = firstSplit[1].split("|");
+        String[] links = firstSplit[1].split("\\|");
 
         if (links != null) {
             for (String link : links) {

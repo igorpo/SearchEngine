@@ -42,7 +42,7 @@ public class MainServer {
                 QueryHandler qh = new QueryHandler("testcount");
                 List<String> results = qh.query(query);
 
-                sb.append("<html><head><title>Test</title></head><body>");
+                sb.append("<htm l><head><title>Test</title></head><body>");
                 for (String s : results){
                     sb.append("<p>"+s+"</p>");
                 }

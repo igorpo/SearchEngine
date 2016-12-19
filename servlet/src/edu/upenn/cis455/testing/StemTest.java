@@ -1,6 +1,8 @@
 package edu.upenn.cis455.testing;
 
 
+import edu.upenn.cis455.querying.Stemmer;
+
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +46,14 @@ public class StemTest{
         for (Integer i : pq){
             System.out.println("value: " + i );
         }
-
+        Stemmer s = new Stemmer();
+        s.add("donald".toCharArray(), "donald".length());
+        s.stem();
+        System.out.println(s.toString());
+        s = new Stemmer();
+        s.add("ives".toCharArray(), "ives".length());
+        s.stem();
+        System.out.println(s.toString());
 
     }
 

@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import edu.upenn.cis455.server.MainServer;
+import org.apache.commons.codec.binary.Base32;
 
 import java.util.*;
 
@@ -28,6 +29,8 @@ public class QueryHandler {
 
     DynamoDB dynamoDB;
     Table table;
+    DynamoDB pagedynamoDB;
+    Table pagetable;
 
     private Map<String, Double> urlToTfidf;
 
@@ -35,6 +38,12 @@ public class QueryHandler {
     public QueryHandler(String tableName) {
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         dynamoDB = new DynamoDB(client);
+
+        table = dynamoDB.getTable(tableName);
+        urlToTfidf = new HashMap<>();
+
+        AmazonDynamoDBClient pageclient = new AmazonDynamoDBClient();
+        pagedynamoDB = new DynamoDB(client);
 
         table = dynamoDB.getTable(tableName);
         urlToTfidf = new HashMap<>();
@@ -102,6 +111,7 @@ public class QueryHandler {
         }
         List<String> outList = new LinkedList<>();
         for (String s : pq){
+            new String(new Base32().decode(s.getBytes()));
             outList.add(0, s);
         }
 
