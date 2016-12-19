@@ -21,6 +21,7 @@ public class MainServer {
     public static final int N = 20;
     public static void main(String[] args) {
         AutoComplete.loadDictionary();
+        Spark.setPort(8080);
         Spark.get(new Route("/") {
 
             @Override
@@ -44,14 +45,7 @@ public class MainServer {
                         "\t\t\t\t<button type=\"submit\" class=\"control-btn\">I'm Feeling Spicy</button>\n" +
                         "\t\t\t</div>\n" +
                         "\t\t</form>\n" +
-                        "\t\t<form action=\"vr/search\" method=\"get\">\n" +
-                        "\t\t\t<input name=\"q\" class=\"search-box front\" type=\"text\" placeholder=\"Type yo vr search\" autofocus/>\n" +
-                        "\t\t\t<div class=\"search-controls\">\n" +
-                        "\t\t\t\t<button type=\"submit\" class=\"control-btn\">Search</button>\n" +
-                        "\t\t\t\t<button type=\"submit\" class=\"control-btn\">I'm Feeling Spicy</button>\n" +
-                        "\t\t\t</div>\n" +
-                        "\t\t\t<p>Learn more about <a target=\"_blank\" href=\"http://duboispa.gov/\">Da B0iz</a></p>\t\n" +
-                        "\t\t</form>\n" +
+                        "\t\t\t<p>Happy Monday! :) Enjoy your searches, stay warm.</p>\t\n" +
                         "\t</div>\n" +
                         "</body>\n" +
                         "</html>";
@@ -64,11 +58,15 @@ public class MainServer {
 
             @Override
             public Object handle(Request request, Response response) {
+                long tStart = System.currentTimeMillis();
                 System.out.println(request.queryParams("q"));
                 StringBuilder sb = new StringBuilder();
                 String query = request.queryParams("q");
+
                 QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
+
                 String suggestionLine = null;
+
                 if (!query.contains("\\s+")) {
                     Set<String> suggestions = AutoComplete.getSuggestionsWithinTrigramDist(query, 0.52);
                     StringBuilder sug_sb = new StringBuilder();
@@ -87,6 +85,9 @@ public class MainServer {
                     suggestionLine = sug_sb.toString();
                 }
                 List<String> results = qh.query(query);
+                long tEnd = System.currentTimeMillis();
+                long tDelta = tEnd - tStart;
+                double elapsedSeconds = tDelta / 1000.0;
                 int numResults =results == null ? 0 : results.size();
                 String base = "<!DOCTYPE html>\n" +
                         "<html>\n" +
@@ -103,10 +104,11 @@ public class MainServer {
                         "\t\t\t<form action=\"search\" method=\"get\">\n" +
                         "\t\t\t\t<input  name=\"q\" value=\""+query+"\" class=\"search-box results\" type=\"text\" placeholder=\"Type yo search\" autofocus/>\n" +
                         "\t\t\t</form>\t\n" +
+                        "<a style='float: right' href='/vr/search?q="+query+"'><img style='width: 60px; margin-right: 20px' src='https://d30y9cdsu7xlg0.cloudfront.net/png/337516-200.png'/></a>"+
                         "\t\t</div>\n" +
                         "\t\t\n" +
                         "\t\t<div class=\"search-results-container\">\n" +
-                        "\t\t\t<p class=\"search-stats\">About "+numResults+" results</p>\n";
+                        "\t\t\t<p class=\"search-stats\">"+numResults+" results on this page ("+elapsedSeconds +" seconds)</p>\n";
                 sb.append(base);
                 if (suggestionLine != null){
                     sb.append(suggestionLine);
@@ -228,9 +230,14 @@ public class MainServer {
                         "\t\t\t</script>\n" +
                         "\n";
                 StringBuilder sb = new StringBuilder(html);
+
+                sb.append("<a-entity bmfont-text='text: ");
+                sb.append(query);
+                sb.append("; color: #FFFFFF' position='0 -4 5'></a-entity>");
+
                 for (int i = 0; i < results.size(); i++) {
                     if (i % 10 == 0) {
-                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * 1) / 10)) + " 0\">\n");
+                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5.5\" position=\"0 " + (0.35 + ((i * 1) / 10)) + " 0\">\n");
                     }
                     sb.append("<a-entity look-at='#camera'>");
                     sb.append("\t\t\t\t<a-box \n" +
@@ -251,7 +258,7 @@ public class MainServer {
                     sb.append(results.get(i));
 
                     sb.append("; color: #234099\"\n" +
-                            "\t\t\t    \t\tposition=\"-1.45 -.05 1.001\">\t\n" +
+                            "\t\t\t    \t\tposition=\"-1.25 -.05 1.00\" scale=\"0.5 0.5 1.0\">\t\n" +
                             "\t\t\t    \t</a-entity>\n" +
                             "\n" +
                             "\n" +
