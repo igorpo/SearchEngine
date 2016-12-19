@@ -226,7 +226,7 @@ public class MainServer {
                     sb.append(results.get(i));
 
                     sb.append("; color: #234099\"\n" +
-                            "\t\t\t    \t\tposition=\"-1.45 .275 1.001\">\t\n" +
+                            "\t\t\t    \t\tposition=\"-1.45 -.05 1.001\">\t\n" +
                             "\t\t\t    \t</a-entity>\n" +
                             "\n" +
                             "\n" +
