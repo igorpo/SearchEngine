@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class MainServer {
 
-    public static final int N = 10;
+    public static final int N = 20;
     public static void main(String[] args) {
 
         Spark.get(new Route("/main") {
@@ -39,12 +39,12 @@ public class MainServer {
                 System.out.println(request.queryParams("q"));
                 StringBuilder sb = new StringBuilder();
                 String query = request.queryParams("q");
-                QueryHandler qh = new QueryHandler("testcount");
+                QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
                 List<String> results = qh.query(query);
 
                 sb.append("<htm l><head><title>Test</title></head><body>");
                 for (String s : results){
-                    sb.append("<p>"+s+"</p>");
+                    sb.append("<p><a href=\""+s+"\">"+s+"<a></p>");
                 }
                 sb.append("</body></html>");
                 return sb.toString();
