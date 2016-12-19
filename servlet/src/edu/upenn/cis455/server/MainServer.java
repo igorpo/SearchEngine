@@ -67,11 +67,6 @@ public class MainServer {
                 QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
                 List<String> results = qh.query(query);
 
-<<<<<<< HEAD
-                sb.append("<htm l><head><title>Test</title></head><body>");
-                for (String s : results){
-                    sb.append("<p><a href=\""+s+"\">"+s+"<a></p>");
-=======
                 String base = "<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -98,11 +93,9 @@ public class MainServer {
                     for (String s : results) {
                         sb.append(
                         "\t\t\t<div class=\"search-result\">\n" +
-                        "\t\t\t\t<h3 class=\"title\"><a href=\""+s+"\">"+s+"</a>" +
-                        "\t\t\t\t<p class=\"url\">www.upenn.edu/</p>\n</h3>\n" +
+                        "\t\t\t\t<h3 class=\"title\"><a href=\""+s+"\">"+s+"</a></h3>\n" +
                         "\t\t\t</div>\n");
                     }
->>>>>>> 4f43c0d378baa7438fceda7b014edcc49310198c
                 }
                 sb.append("\n" +
                         "\n" +
@@ -119,7 +112,7 @@ public class MainServer {
             public Object handle(Request request, Response response) {
                 System.out.println(request.queryParams("q"));
                 String query = request.queryParams("q");
-                QueryHandler qh = new QueryHandler("testcount");
+                QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
                 List<String> results = qh.query(query);
 
                 //return sb.toString();

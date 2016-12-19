@@ -33,6 +33,9 @@ public class QueryHandler {
     String pagetableName;
     Table pagetable;
 
+    DynamoDB fallbackdynamoDB;
+    Table fallbacktable;
+
     private Map<String, Double> urlToTfidf;
     private Map<String, Double> urlToPage;
 
@@ -42,6 +45,12 @@ public class QueryHandler {
         dynamoDB = new DynamoDB(client);
         Region page = Region.getRegion(Regions.US_EAST_1);
         client.setRegion(page);
+
+        AmazonDynamoDBClient fallbackclient = new AmazonDynamoDBClient();
+        fallbackdynamoDB = new DynamoDB(fallbackclient);
+        Region fpage = Region.getRegion(Regions.US_EAST_1);
+        client.setRegion(fpage);
+        fallbacktable = fallbackdynamoDB.getTable("test1knew");
 
         table = dynamoDB.getTable(tableName);
         urlToTfidf = new HashMap<>();
@@ -225,7 +234,15 @@ public class QueryHandler {
             Item item = table.getItem("word", word);
             if(item != null) {
                 List<List<String>> s = item.getList("data");
-                if (item != s) {
+                if (item != null) {
+                    results.add(s);
+                    continue;
+                }
+            }
+            Item fallbackitem = fallbacktable.getItem("word", word);
+            if(fallbackitem != null) {
+                List<List<String>> s = fallbackitem.getList("data");
+                if (fallbackitem != null) {
                     results.add(s);
                 }
             }
