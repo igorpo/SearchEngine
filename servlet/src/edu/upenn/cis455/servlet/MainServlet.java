@@ -34,14 +34,14 @@ public class MainServlet extends HttpServlet {
             System.out.println(request.getParameter("q"));
             PrintWriter out = response.getWriter();
             String query = request.getParameter("q");
-            QueryHandler qh = new QueryHandler(tableName);
-            List<String> results = qh.query(query);
+            //QueryHandler qh = new QueryHandler(tableName);
+            //List<String> results = qh.query(query);
 
             out.println("<html><head><title>Test</title></head><body>");
-            for (String s : results){
-                out.println("<p>"+s+"</p>");
-            }
-            out.println("</body></html>");
+            //for (String s : results){
+//                out.println("<p>"+s+"</p>");
+//            }
+//            out.println("</body></html>");
 
         }
 

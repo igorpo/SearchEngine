@@ -1,10 +1,10 @@
 package edu.upenn.cis455.querying;
 
 
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
+import com.amazonaws.services.dynamodbv2.document.*;
 import edu.upenn.cis455.server.MainServer;
 import org.apache.commons.codec.binary.Base32;
 
@@ -30,23 +30,38 @@ public class QueryHandler {
     DynamoDB dynamoDB;
     Table table;
     DynamoDB pagedynamoDB;
+    String pagetableName;
     Table pagetable;
 
+    DynamoDB fallbackdynamoDB;
+    Table fallbacktable;
+
     private Map<String, Double> urlToTfidf;
+    private Map<String, Double> urlToPage;
 
 
-    public QueryHandler(String tableName) {
+    public QueryHandler(String tableName, String pageTableName) {
         AmazonDynamoDBClient client = new AmazonDynamoDBClient();
         dynamoDB = new DynamoDB(client);
+        Region page = Region.getRegion(Regions.US_EAST_1);
+        client.setRegion(page);
+
+        AmazonDynamoDBClient fallbackclient = new AmazonDynamoDBClient();
+        fallbackdynamoDB = new DynamoDB(fallbackclient);
+        Region fpage = Region.getRegion(Regions.US_EAST_1);
+        client.setRegion(fpage);
+        fallbacktable = fallbackdynamoDB.getTable("test1knew");
 
         table = dynamoDB.getTable(tableName);
         urlToTfidf = new HashMap<>();
+        urlToPage = new HashMap<>();
 
         AmazonDynamoDBClient pageclient = new AmazonDynamoDBClient();
-        pagedynamoDB = new DynamoDB(client);
-
-        table = dynamoDB.getTable(tableName);
-        urlToTfidf = new HashMap<>();
+        Region rpage = Region.getRegion(Regions.US_WEST_2);
+        pageclient.setRegion(rpage);
+        pagedynamoDB = new DynamoDB(pageclient);
+        this.pagetableName = pageTableName;
+        pagetable = pagedynamoDB.getTable(pageTableName);
 
     }
 
@@ -60,8 +75,15 @@ public class QueryHandler {
 
     private double weightWithPageRank(String url, double tfidf){
         // get pank rank from dynamodb
-        double pagerank = 1000.0;
+        double pagerank = 0.0;
         double pagerankWeight = 0.0;
+        Double d = urlToPage.get(url);
+        if (d != null){
+            pagerank = d;
+            pagerankWeight = 1.0;
+
+
+        }
         return pagerank*pagerankWeight + (1-pagerankWeight)*tfidf;
     }
 
@@ -111,8 +133,8 @@ public class QueryHandler {
         }
         List<String> outList = new LinkedList<>();
         for (String s : pq){
-            new String(new Base32().decode(s.getBytes()));
-            outList.add(0, s);
+            String fixed = new String(new Base32().decode(s.getBytes()));
+            outList.add(0, fixed);
         }
 
 
@@ -142,10 +164,48 @@ public class QueryHandler {
         }
         int numQueries = results.size();
         //re-normalize tfidf
+        int num = 0;
+        int total = 0;
+        TableKeysAndAttributes batchAttribute = new TableKeysAndAttributes(pagetableName);
         for(String u : urlToTfidf.keySet()) {
+            total++;
             urlToTfidf.put(u, urlToTfidf.get(u)/numQueries);
+            batchAttribute.addHashOnlyPrimaryKey("url", new String(new Base32().decode(u.getBytes())));
+            num++;
+            if (num >= 25){
+                System.out.println("getting1");
+                BatchGetItemOutcome outcome = pagedynamoDB.batchGetItem(
+                        batchAttribute);
+                System.out.println(outcome);
+                System.out.println("getting2");
+                List<Item> items = outcome.getTableItems().get(pagetableName);
+                for (Item item : items) {
+                    System.out.println(item);
+                    System.out.println("putting in map");
+                    urlToPage.put(item.getString("url"), Double.parseDouble(item.getString("pageRank")));
+                }
+                System.out.println(outcome.getUnprocessedKeys().size());
+
+                num = 0;
+                batchAttribute = new TableKeysAndAttributes(pagetableName);
+            }
+        }
+        if (num != 0 ){
+            System.out.println("getting1last");
+            BatchGetItemOutcome outcome = pagedynamoDB.batchGetItem(
+                    batchAttribute);
+            System.out.println("getting2last");
+            List<Item> items = outcome.getTableItems().get(pagetableName);
+            for (Item item : items) {
+                System.out.println("putting in map");
+                urlToPage.put(item.getString("url"), Double.parseDouble(item.getString("pageRank")));
+            }
+
+            num = 0;
+            batchAttribute = new TableKeysAndAttributes(pagetableName);
         }
 
+        System.out.println("total: " + total);
         return sortMap();
     }
 
@@ -174,7 +234,15 @@ public class QueryHandler {
             Item item = table.getItem("word", word);
             if(item != null) {
                 List<List<String>> s = item.getList("data");
-                if (item != s) {
+                if (item != null) {
+                    results.add(s);
+                    continue;
+                }
+            }
+            Item fallbackitem = fallbacktable.getItem("word", word);
+            if(fallbackitem != null) {
+                List<List<String>> s = fallbackitem.getList("data");
+                if (fallbackitem != null) {
                     results.add(s);
                 }
             }

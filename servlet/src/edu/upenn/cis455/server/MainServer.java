@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class MainServer {
 
-    public static final int N = 10;
+    public static final int N = 20;
     public static void main(String[] args) {
 
         Spark.get(new Route("/") {
@@ -64,7 +64,7 @@ public class MainServer {
                 System.out.println(request.queryParams("q"));
                 StringBuilder sb = new StringBuilder();
                 String query = request.queryParams("q");
-                QueryHandler qh = new QueryHandler("testcount");
+                QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
                 List<String> results = qh.query(query);
 
                 String base = "<!DOCTYPE html>\n" +
@@ -93,8 +93,7 @@ public class MainServer {
                     for (String s : results) {
                         sb.append(
                         "\t\t\t<div class=\"search-result\">\n" +
-                        "\t\t\t\t<h3 class=\"title\"><a href=\""+s+"\">"+s+"</a>" +
-                        "\t\t\t\t<p class=\"url\">www.upenn.edu/</p>\n</h3>\n" +
+                        "\t\t\t\t<h3 class=\"title\"><a href=\""+s+"\">"+s+"</a></h3>\n" +
                         "\t\t\t</div>\n");
                     }
                 }
@@ -113,7 +112,7 @@ public class MainServer {
             public Object handle(Request request, Response response) {
                 System.out.println(request.queryParams("q"));
                 String query = request.queryParams("q");
-                QueryHandler qh = new QueryHandler("testcount");
+                QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
                 List<String> results = qh.query(query);
 
                 //return sb.toString();
