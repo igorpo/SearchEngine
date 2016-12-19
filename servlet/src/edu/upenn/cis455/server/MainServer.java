@@ -205,7 +205,7 @@ public class MainServer {
                 StringBuilder sb = new StringBuilder(html);
                 for (int i = 0; i < results.size(); i++) {
                     if (i % 10 == 0) {
-                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * .6) / 10)) + " 0\">\n");
+                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * 1) / 10)) + " 0\">\n");
                     }
                     sb.append("<a-entity look-at='#camera'>");
                     sb.append("\t\t\t\t<a-box \n" +
