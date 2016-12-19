@@ -1,5 +1,6 @@
 package edu.upenn.cis455.server;
 
+import edu.upenn.cis455.querying.AutoComplete;
 import edu.upenn.cis455.querying.QueryHandler;
 import spark.Request;
 import spark.Response;
@@ -7,7 +8,9 @@ import spark.Route;
 import spark.Spark;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by YagilB on 01/12/2016.
@@ -17,7 +20,7 @@ public class MainServer {
 
     public static final int N = 20;
     public static void main(String[] args) {
-
+        AutoComplete.loadDictionary();
         Spark.get(new Route("/") {
 
             @Override
@@ -65,8 +68,26 @@ public class MainServer {
                 StringBuilder sb = new StringBuilder();
                 String query = request.queryParams("q");
                 QueryHandler qh = new QueryHandler("finalIndex250keast", "pageRankOutput2");
+                String suggestionLine = null;
+                if (!query.contains("\\s+")) {
+                    Set<String> suggestions = AutoComplete.getSuggestionsWithinTrigramDist(query, 0.52);
+                    StringBuilder sug_sb = new StringBuilder();
+                    sug_sb.append("<div style='margin: 10px 0 25px 0; font-style: italic;'>Did you mean: ");
+                    String del = "";
+                    int count = 0;
+                    for (String s : suggestions) {
+                        String href = "<a href='search?q="+s+"'>"+s+"</a>";
+                        sug_sb.append(del).append(href);
+                        del = ", ";
+                        count++;
+                        if (count > 5)
+                            break;
+                    }
+                    sug_sb.append("</div>");
+                    suggestionLine = sug_sb.toString();
+                }
                 List<String> results = qh.query(query);
-
+                int numResults =results == null ? 0 : results.size();
                 String base = "<!DOCTYPE html>\n" +
                         "<html>\n" +
                         "<head>\n" +
@@ -79,17 +100,21 @@ public class MainServer {
                         "\t\t\t<div class=\"logo results\">\n" +
                         "\t\t\t\t<img class=\"small\" src=\"http://guswynn.github.io/style_for_search/logo.png\">\n" +
                         "\t\t\t</div>\n" +
-                        "\t\t\t<form action=\"\" method=\"\">\n" +
-                        "\t\t\t\t<input class=\"search-box results\" type=\"text\" placeholder=\"Type yo search\" autofocus/>\n" +
+                        "\t\t\t<form action=\"search\" method=\"get\">\n" +
+                        "\t\t\t\t<input  name=\"q\" value=\""+query+"\" class=\"search-box results\" type=\"text\" placeholder=\"Type yo search\" autofocus/>\n" +
                         "\t\t\t</form>\t\n" +
                         "\t\t</div>\n" +
                         "\t\t\n" +
                         "\t\t<div class=\"search-results-container\">\n" +
-                        "\t\t\t<p class=\"search-stats\">About 177,000,000 results (0.89 seconds)</p>\n";
+                        "\t\t\t<p class=\"search-stats\">About "+numResults+" results</p>\n";
                 sb.append(base);
+                if (suggestionLine != null){
+                    sb.append(suggestionLine);
+                }
                 if (results == null){
-                    sb.append("<p>Uh oh, no results</p>");
+                    sb.append("<p>SearchB0iz could not find results to satisfy you. Please try again.</p>");
                 } else {
+
                     for (String s : results) {
                         sb.append(
                         "\t\t\t<div class=\"search-result\">\n" +
@@ -205,13 +230,13 @@ public class MainServer {
                 StringBuilder sb = new StringBuilder(html);
                 for (int i = 0; i < results.size(); i++) {
                     if (i % 10 == 0) {
-                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * .6) / 10)) + " 0\">\n");
+                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * 1) / 10)) + " 0\">\n");
                     }
                     sb.append("<a-entity look-at='#camera'>");
-                    sb.append("\t\t\t\t<a-plane \n" +
+                    sb.append("\t\t\t\t<a-box \n" +
                             "\t\t\t\t\tclass=\"search-result\" \n" +
                             "\t\t\t\t\theight=\"1\" \n" +
-                            "\t\t\t\t\twidth=\"3\"\n" +
+                            "\t\t\t\t\twidth=\"3\"\nheight=\"2\"\n" +
                             "\t\t            material=\"shader: flat; color: rgba(255, 255, 255, .8)\"\n" +
                             "\t\t            event-set__1=\"_event: mousedown; scale: 1 1 1\"\n" +
                             "\t\t            event-set__2=\"_event: mouseup; scale: 1.1 1.1 1\"\n" +
@@ -226,7 +251,7 @@ public class MainServer {
                     sb.append(results.get(i));
 
                     sb.append("; color: #234099\"\n" +
-                            "\t\t\t    \t\tposition=\"-1.45 .275 0.001\">\t\n" +
+                            "\t\t\t    \t\tposition=\"-1.45 -.05 1.001\">\t\n" +
                             "\t\t\t    \t</a-entity>\n" +
                             "\n" +
                             "\n" +
@@ -237,7 +262,7 @@ public class MainServer {
                             "\t\t\t    \t\tmaterial=\"shader: flat; color: #CCC\"\n" +
                             "\t\t\t            position=\"0 0 -.002\">\n" +
                             "\t\t\t    \t</a-plane>\n" +
-                            "\t            </a-plane>\n");
+                            "\t            </a-box>\n");
                     sb.append("</a-entity>");
                     if (i % 10 == 9){
                         sb.append("\t\t\t</a-entity>\n");
