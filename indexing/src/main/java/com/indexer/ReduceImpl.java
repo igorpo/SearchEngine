@@ -45,7 +45,7 @@ public class ReduceImpl extends Reducer<Text, Text, Text, Text> {
         //client.setRegion(reg);
         DynamoDB dynamoDB = new DynamoDB(client);
 
-        table = dynamoDB.getTable("finalIndex250keast");
+        table = dynamoDB.getTable("test1knew");
         this.N = Double.parseDouble(c.getConfiguration().get("num"));
     }
 
