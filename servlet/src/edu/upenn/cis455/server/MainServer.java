@@ -14,6 +14,7 @@ import java.util.List;
  */
 public class MainServer {
 
+    public static final int N = 10;
     public static void main(String[] args) {
 
         Spark.get(new Route("/main") {

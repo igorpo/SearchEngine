@@ -5,6 +5,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
+import edu.upenn.cis455.server.MainServer;
 
 import java.util.*;
 
@@ -61,14 +62,31 @@ public class QueryHandler {
 
 
 
-        keys.sort(new Comparator<String>() {
+//        keys.sort(new Comparator<String>() {
+//            @Override
+//            public int compare(String s, String t1) {
+//                double val1 = weightWithPageRank(s, urlToTfidf.get(s));
+//                double val2 = weightWithPageRank(t1, urlToTfidf.get(t1));
+//                if (val1 < val2){
+//                    return 1;
+//                } else if (val1 > val2){
+//                    return -1;
+//                } else {
+//                    return 0;
+//                }
+//            }
+//        });
+
+
+
+        PriorityQueue<String> pq = new PriorityQueue<>(new Comparator<String>() {
             @Override
-            public int compare(String s, String t1) {
-                double val1 = weightWithPageRank(s, urlToTfidf.get(s));
-                double val2 = weightWithPageRank(t1, urlToTfidf.get(t1));
-                if (val1 < val2){
+            public int compare(String s1, String s2) {
+                double val1 = weightWithPageRank(s1, urlToTfidf.get(s1));
+                double val2 = weightWithPageRank(s2, urlToTfidf.get(s2));
+                if (val1 > val2){
                     return 1;
-                } else if (val1 > val2){
+                } else if (val1 < val2){
                     return -1;
                 } else {
                     return 0;
@@ -76,9 +94,19 @@ public class QueryHandler {
             }
         });
 
+        for (String s : keys){
+            pq.offer(s);
+            if (pq.size() > MainServer.N){
+                pq.poll();
+            }
+        }
+        List<String> outList = new LinkedList<>();
+        for (String s : pq){
+            outList.add(0, s);
+        }
 
 
-        return keys;
+        return outList;
     }
 
 
