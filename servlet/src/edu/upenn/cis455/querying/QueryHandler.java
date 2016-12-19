@@ -172,7 +172,6 @@ public class QueryHandler {
                 List<Item> items = outcome.getTableItems().get(pagetableName);
                 for (Item item : items) {
                     System.out.println(item);
-                    System.out.println
                     System.out.println("putting in map");
                     urlToPage.put(item.getString("url"), Double.parseDouble(item.getString("pageRank")));
                 }
@@ -203,6 +202,9 @@ public class QueryHandler {
 
     public List<String> query(String q){
 
+        if (q == null || q.isEmpty()){
+            return null;
+        }
         // lowercase
         // split
         String[] queryWords = q.toLowerCase().split("[^\\p{Alnum}']+");
@@ -221,16 +223,20 @@ public class QueryHandler {
         Set<List<List<String>>> results = new HashSet<>();
         for (String word : stemmedWordsToSearch){
             Item item = table.getItem("word", word);
-            if (item != null) {
+            if(item != null) {
                 List<List<String>> s = item.getList("data");
-
-                results.add(s);
+                if (item != s) {
+                    results.add(s);
+                }
             }
         }
 
 
         // perform union
         // AND sort by tfidf
+        if (results == null || results.isEmpty()){
+            return null;
+        }
         List<String> yeahbud = combineResults(results);
 
         return yeahbud;

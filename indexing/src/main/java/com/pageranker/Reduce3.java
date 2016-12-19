@@ -2,21 +2,18 @@ package com.pageranker;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.PutItemOutcome;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Iterator;
 
 /**
  * Created by kierajmumick on 12/8/16.
  */
-public class Reduce3 extends MapReduceBase implements Reducer<FloatWritable, Text, FloatWritable, Text> {
+public class Reduce3 extends MapReduceBase implements Reducer<FloatWritable, Text, Text, Text> {
 
     Table table;
     @Override
@@ -32,18 +29,18 @@ public class Reduce3 extends MapReduceBase implements Reducer<FloatWritable, Tex
     @Override
     public void reduce(FloatWritable key,
                        Iterator<Text> values,
-                       OutputCollector<FloatWritable, Text> output,
+                       OutputCollector<Text, Text> output,
                        Reporter reporter) throws IOException {
         while (values.hasNext()) {
             Text t = values.next();
             String s = t.toString();
 
-            try {
-                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("url", S3Wrapper.encodeSafeKey(s)).withNumber("rank", new BigDecimal((double)key.get())).withString("unsafe_url", s));
-                outcome.getPutItemResult();
-            } catch (Exception e) {
-            }
-            output.collect(key, new Text(s));
+//            try {
+//                PutItemOutcome outcome = table.putItem(new Item().withPrimaryKey("url", S3Wrapper.encodeSafeKey(s)).withNumber("rank", new BigDecimal((double)key.get())).withString("unsafe_url", s));
+//                outcome.getPutItemResult();
+//            } catch (Exception e) {
+//            }
+            output.collect(new Text(s), new Text(Double.toString(key.get())));
         }
     }
 
