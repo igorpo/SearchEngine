@@ -33,7 +33,9 @@ public class PageJob3 implements RunnableJob {
         conf.setJobName("pageranker.job3");
 
         // Set the output key and value classes.
-        conf.setOutputKeyClass(FloatWritable.class);
+        conf.setMapOutputKeyClass(FloatWritable.class);
+        conf.setMapOutputValueClass(Text.class);
+        conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
 
         // Set the mapper and reducer classes.
