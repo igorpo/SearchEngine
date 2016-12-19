@@ -230,13 +230,13 @@ public class MainServer {
                 StringBuilder sb = new StringBuilder(html);
                 for (int i = 0; i < results.size(); i++) {
                     if (i % 10 == 0) {
-                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * .6) / 10)) + " 0\">\n");
+                        sb.append("\t\t\t<a-entity class=\"results\" layout=\"type: circle; radius: 5\" position=\"0 " + (1.0 + ((i * 1) / 10)) + " 0\">\n");
                     }
                     sb.append("<a-entity look-at='#camera'>");
-                    sb.append("\t\t\t\t<a-plane \n" +
+                    sb.append("\t\t\t\t<a-box \n" +
                             "\t\t\t\t\tclass=\"search-result\" \n" +
                             "\t\t\t\t\theight=\"1\" \n" +
-                            "\t\t\t\t\twidth=\"3\"\n" +
+                            "\t\t\t\t\twidth=\"3\"\nheight=\"2\"\n" +
                             "\t\t            material=\"shader: flat; color: rgba(255, 255, 255, .8)\"\n" +
                             "\t\t            event-set__1=\"_event: mousedown; scale: 1 1 1\"\n" +
                             "\t\t            event-set__2=\"_event: mouseup; scale: 1.1 1.1 1\"\n" +
@@ -251,7 +251,7 @@ public class MainServer {
                     sb.append(results.get(i));
 
                     sb.append("; color: #234099\"\n" +
-                            "\t\t\t    \t\tposition=\"-1.45 .275 0.001\">\t\n" +
+                            "\t\t\t    \t\tposition=\"-1.45 -.05 1.001\">\t\n" +
                             "\t\t\t    \t</a-entity>\n" +
                             "\n" +
                             "\n" +
@@ -262,7 +262,7 @@ public class MainServer {
                             "\t\t\t    \t\tmaterial=\"shader: flat; color: #CCC\"\n" +
                             "\t\t\t            position=\"0 0 -.002\">\n" +
                             "\t\t\t    \t</a-plane>\n" +
-                            "\t            </a-plane>\n");
+                            "\t            </a-box>\n");
                     sb.append("</a-entity>");
                     if (i % 10 == 9){
                         sb.append("\t\t\t</a-entity>\n");
