@@ -22,12 +22,6 @@ public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
 
     @Override
     public void setup(Context c) {
-        // Set up Amazon S3
-        S3Wrapper.init("cis-455-final");
-
-        // Set up Amazon DynamoDB
-        DynamoWrapper.init();
-        DynamoWrapper.setTable("testing_urls");
     }
 
     @Override
@@ -36,20 +30,26 @@ public class Map1 extends Mapper<LongWritable, Text, Text, Text> {
                     Context c) throws IOException, InterruptedException {
         // Get the URL
         // TODO: Gus & Chris: Make it work
-        String url = S3Wrapper.decodeSafeKey((((FileSplit) c.getInputSplit()).getPath()).getName());
+        //String url = S3Wrapper.decodeSafeKey((((FileSplit) c.getInputSplit()).getPath()).getName());
 
         // Get the list of URLs
-        List<String> links = null;
-        int numTries = 1;
-        try {
-            links = DynamoWrapper.retrieveOutgoingLinksForURL(url);
-        } catch (ProvisionedThroughputExceededException e){
-            Thread.sleep(1000);
-            numTries++;
-            if (numTries > 100){
-                throw e;
-            }
-        }
+        // List<String> links = null;
+        // int numTries = 1;
+        // try {
+        //     links = DynamoWrapper.retrieveOutgoingLinksForURL(url);
+        // } catch (ProvisionedThroughputExceededException e){
+        //     Thread.sleep(1000);
+        //     numTries++;
+        //     if (numTries > 100){
+        //         throw e;
+        //     }
+        // }
+
+        String[] firstSplit = value.toString().split("\t");
+        if (firstSplit.length != 3)
+            return;
+        String url = firstSplit[2];
+        String[] links = firstSplit[1].split("|");
 
         if (links != null) {
             for (String link : links) {

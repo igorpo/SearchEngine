@@ -45,7 +45,6 @@ public class PageJob1 implements RunnableJob {
         Job conf = Job.getInstance(c,"pageRank1");
         conf.setJobName("pageRank1");
 
-
         conf.setJarByClass(PageJob1.class);
         conf.setOutputKeyClass(Text.class);
         conf.setOutputValueClass(Text.class);
@@ -54,7 +53,7 @@ public class PageJob1 implements RunnableJob {
         //conf.setCombinerClass(ReduceImpl.class);
         conf.setReducerClass(Reduce1.class);
 
-        conf.setInputFormatClass(NoSplitter.class);
+        conf.setInputFormatClass(TextInputFormat.class);
         conf.setOutputFormatClass(TextOutputFormat.class);
 
         FileInputFormat.setInputPaths(conf, new Path(inputPath));
@@ -73,116 +72,4 @@ public class PageJob1 implements RunnableJob {
         PageJob1 job = new PageJob1();
         job.run(args[0], args[1]);
     }
-
-    public static class NoSplitter extends TextInputFormat {
-
-
-        @Override
-        public boolean isSplitable(JobContext a, Path file){
-            return false;
-        }
-
-        @Override
-        public RecordReader<LongWritable, Text> createRecordReader(
-                InputSplit split, TaskAttemptContext context){
-            return new CustomLineRecordReader();
-        }
-    }
-
-    public static class CustomLineRecordReader
-            extends RecordReader<LongWritable, Text> {
-
-        private long start;
-        private long pos;
-        private long end;
-        private LineReader in;
-        private int maxLineLength;
-        private LongWritable key = new LongWritable();
-        private Text value = new Text();
-
-        @Override
-        public void initialize(InputSplit genericSplit, TaskAttemptContext context) throws IOException {
-
-            FileSplit split = (FileSplit) genericSplit;
-            final Path file = split.getPath();
-
-            Configuration job = context.getConfiguration();
-            this.maxLineLength = job.getInt("mapred.linerecordreader.maxlength", Integer.MAX_VALUE);
-
-            start = split.getStart();
-            end = start + split.getLength();
-
-            FileSystem fs = file.getFileSystem(job);
-            FSDataInputStream fileIn = fs.open(split.getPath());
-
-            in = new LineReader(fileIn, job);
-
-            // Position is the actual start
-            this.pos = start;
-        }
-
-
-        boolean read = true;
-        @Override
-        public boolean nextKeyValue() throws IOException {
-            // Current offset is the key
-            key.set(pos);
-
-//            int newSize = 0;
-//            String temp = "";
-//            while (pos < end) {
-//                newSize = in.readLine(value, maxLineLength,
-//                        Math.max((int) Math.min(
-//                                Integer.MAX_VALUE, end - pos),
-//                                maxLineLength));
-//
-//                if (newSize == 0) {
-//                    break;
-//                }
-//                pos += newSize;
-//                temp = temp + value.toString();
-//            }
-//            value.set(temp);
-            value.set("");
-            if (read) {
-                return true;
-            } else {
-                read = false;
-                return false;
-            }
-        }
-
-        @Override
-        public LongWritable getCurrentKey() throws IOException,
-                InterruptedException {
-            return key;
-        }
-
-        @Override
-        public Text getCurrentValue() throws IOException, InterruptedException {
-            return value;
-        }
-
-        @Override
-        public float getProgress() throws IOException, InterruptedException {
-            if (start == end) {
-                return 0.0f;
-            } else {
-                return Math.min(1.0f, (pos - start) / (float) (end - start));
-            }
-        }
-
-        @Override
-        public void close() throws IOException {
-            if (in != null) {
-                in.close();
-            }
-        }
-
-    }
 }
-
-
-
-
-
